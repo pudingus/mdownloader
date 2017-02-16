@@ -127,36 +127,31 @@ namespace downloader3
         private string ConvertTime(double dSeconds)
         {   
             string[] words = { "sekund", "minut", "hodin" };
-            char letter;
-            int seconds, minutes, hours, unit;
-            string str;
+            char letter;            
+            string str = " ";
+            int[] time = new int[3];
             
-            seconds = Convert.ToInt32(dSeconds);
-            minutes = 0;
-            hours = 0;            
-
-            /*if (unit == 1) letter = 'a';
-            else if (unit >= 2 && unit <= 4) letter = 'y';
-            else letter = '\0';*/
-
-            str = string.Format("{0} {1}", seconds, words[0]);
-
-            if (seconds >= 60) //minuty
+            time[0] = Convert.ToInt32(dSeconds);
+            time[1] = time[0] / 60;
+            time[0] = time[0] - (time[1] * 60);
+            time[2] = time[1] / 60;
+            time[1] = time[1] - (time[2] * 60);
+            
+            for (int i = 0; i < 3; i++) 
             {
-                minutes = seconds / 60;
-                seconds = seconds % minutes;
-                str = string.Format("{0} {1}", minutes, words[1]);
+                if (time[i] == 1) letter = 'a';
+                else if (time[i] >= 2 && time[i] <= 4) letter = 'y';
+                else letter = '\0';
+                words[i] += letter; 
             }
-            else if (minutes >= 60) //hodiny
-            {
-                hours = minutes / 60;
-                minutes = minutes % hours;
-                str = string.Format("{0} {1} a {2} {3}", hours, words[2], minutes, words[1]);
-            }            
+
+            if (time[2] == 0 && time[1] == 0) str = string.Format("{0} {1}", time[0], words[0]);             
+            else if (time[1] >= 1 && time[2] == 0) str = string.Format("{0} {1}", time[1], words[1]);            
+            else if (time[2] >= 1 && time[1] == 0) str = string.Format("{0} {1}", time[2], words[2]);            
+            else str = string.Format("{0} {1} a {2} {3}", time[2], words[2], time[1], words[1]);          
 
             return str;           
-        }
-                
+        }                
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {            
