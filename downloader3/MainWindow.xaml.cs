@@ -52,11 +52,12 @@ namespace downloader3
                 client.Filename = linksWindows.filename;
                 sw.Start();
 
-                DataView.Items.Add(new MyData() { Name = linksWindows.filename, Progress = 0 });
+                DataView.Items.Add(new MyData() { Name = linksWindows.filename, Progress = 0, Client = client });
 
                 index++;                
             }
         }
+
         void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             WebClientEx c = sender as WebClientEx;
@@ -75,7 +76,14 @@ namespace downloader3
 
         private void Completed(object sender, AsyncCompletedEventArgs e)
         {
-            sw.Reset();            
+            WebClientEx c = sender as WebClientEx;
+            sw.Reset();
+            if (e.Cancelled)
+            {
+                File.Delete(c.Filename);
+                c.Dispose();                
+                return;
+            }
         }
 
         private string ConvertFileSize(long bytes)
@@ -89,45 +97,11 @@ namespace downloader3
             else if (bytes >= 1) return string.Format("{0:0.00} MB", (bytes / MB));
 
             else return "error";
-        }
-
-        /*private string ConvertTime(double dSeconds)
-        {
-            string hoursWord;
-            string minutesWord;
-            string secondsWord;
-
-            int seconds = Convert.ToInt32(dSeconds);
-            int minutes = seconds / 60;
-            int hours = minutes / 60;
-
-            if (hours == 1) hoursWord = "hodina";
-            else if (hours >= 2 && hours <= 4) hoursWord = "hodiny";
-            else hoursWord = "hodin";
-
-            if (minutes == 1) minutesWord = "minuta";
-            else if (minutes >= 2 && minutes <= 4) minutesWord = "minuty";
-            else minutesWord = "minut";
-
-            if (seconds == 1) secondsWord = "sekunda";
-            else if (seconds >= 2 && seconds <= 4) secondsWord = "sekundy";
-            else secondsWord = "sekund";
-
-            if (seconds > 3600)
-            {
-                minutes = minutes - (hours * 60);
-                return string.Format("{0} {1} a {2} {3}", hours, hoursWord, minutes, minutesWord);
-            }
-            if (seconds >= 60) return string.Format("{0} {1}", minutes, minutesWord);
-            if (seconds < 60) return string.Format("{0} {1}", seconds, secondsWord);
-
-            return "error";
-        }*/
+        }        
 
         private string ConvertTime(double dSeconds)
         {   
-            string[] words = { "sekund", "minut", "hodin" };
-            char letter;            
+            string[] words = { "sekund", "minut", "hodin" };                        
             string str = " ";
             int[] time = new int[3];
             
@@ -139,10 +113,8 @@ namespace downloader3
             
             for (int i = 0; i < 3; i++) 
             {
-                if (time[i] == 1) letter = 'a';
-                else if (time[i] >= 2 && time[i] <= 4) letter = 'y';
-                else letter = '\0';
-                words[i] += letter; 
+                if (time[i] == 1) words[i] += 'a';
+                else if (time[i] >= 2 && time[i] <= 4) words[i] += 'y';                
             }
 
             if (time[2] == 0 && time[1] == 0) str = string.Format("{0} {1}", time[0], words[0]);             
@@ -154,31 +126,46 @@ namespace downloader3
         }                
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {            
-            if (DataView.SelectedIndex == -1)
-            {
-                return;
-            }
-            MyData item = DataView.SelectedItem as MyData;
-            Process.Start(item.Name);           
+        {
+            if (DataView.SelectedIndex == -1) return;
 
+            MyData item = DataView.SelectedItem as MyData;
+            Process.Start(item.Name);         
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)
         {
-            if (DataView.SelectedIndex == -1)
-            {
-                return;
-            }
-            MyData item = DataView.SelectedItem as MyData;
-            Process.Start(System.IO.Path.GetDirectoryName(item.Name));
+            if (DataView.SelectedIndex == -1) return;
+
+            MyData item = DataView.SelectedItem as MyData;           
+
+            Process process = new Process();
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+
+            startInfo.FileName = "explorer.exe";
+            startInfo.Arguments = "/select, " + item.Name;
+            process.StartInfo = startInfo;
+            process.Start();
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show(ConvertTime(Convert.ToDouble(textBox.Text)));
+            if (DataView.SelectedIndex == -1) return;
+
+            if (MessageBox.Show("Opravdu chcete smazat tento soubor?", "Zrušit", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                MyData item = DataView.SelectedItem as MyData;
+                item.Client.CancelAsync();
+                item.Size = "";
+                item.Progress = 0;
+                item.Percent = 0;
+                item.Speed = "";
+                item.Remaining = "Zrušeno";
+                DataView.Items.Refresh();
+            }
         }
     }
+
     internal class MyData
     {
         public string Name { get; set; }
@@ -187,6 +174,7 @@ namespace downloader3
         public int Percent { get; set; }
         public string Speed { get; set; }
         public string Remaining { get; set; }
+        public WebClientEx Client;
     }  
     
     public class WebClientEx : WebClient

@@ -47,9 +47,7 @@
         <Button x:Name="buttonAdd" Content="+" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="30" Click="buttonAdd_Click" Height="30" FontSize="16"/>
         <Button x:Name="buttonPause" Content="Pozastavit" HorizontalAlignment="Left" Margin="100,10,0,0" VerticalAlignment="Top" Width="90" Height="30"/>
         <Button x:Name="buttonResume" Content="Obnovit" HorizontalAlignment="Left" Margin="206,10,0,0" VerticalAlignment="Top" Width="90" Height="30" RenderTransformOrigin="0.511,0.533"/>
-        <Button x:Name="buttonCancel" Content="Zrušit" HorizontalAlignment="Left" Margin="312,10,0,0" VerticalAlignment="Top" Width="90" Height="30"/>
+        <Button x:Name="buttonCancel" Content="Zrušit" HorizontalAlignment="Left" Margin="312,10,0,0" VerticalAlignment="Top" Width="90" Height="30" Click="buttonCancel_Click"/>
         <Button x:Name="buttonSettings" Content="Nastavení" Margin="0,11,10,0" HorizontalAlignment="Right" Width="90" Height="30" VerticalAlignment="Top"/>
-        <Button x:Name="button" Content="Button" HorizontalAlignment="Left" Margin="427,10,0,0" VerticalAlignment="Top" Width="56" Click="button_Click"/>
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="20" Margin="488,21,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="63"/>
     </Grid>
 </Window>
