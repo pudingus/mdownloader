@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace downloader3
 {
     /// <summary>
-    /// Interakční logika pro Window1.xaml
+    /// Interakční logika pro LinksWindow.xaml
     /// </summary>
-    public partial class Window1 : Window
+    public partial class LinksWindow : Window
     {
-        public Window1()
+        public LinksWindow()
         {
             InitializeComponent();
         }

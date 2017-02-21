@@ -18,6 +18,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
+using System.Windows.Threading;
 
 namespace downloader3
 {
@@ -28,8 +29,8 @@ namespace downloader3
     {              
         double speed;
         int index;
-
-        Stopwatch sw = new Stopwatch();
+        Stopwatch sw = new Stopwatch();        
+        DownloadClient client;
 
         public MainWindow()
         {
@@ -40,51 +41,61 @@ namespace downloader3
 
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
         {
-            Window1 linksWindows = new Window1();
+            LinksWindow linksWindows = new LinksWindow();
             linksWindows.Owner = this;
-            if (linksWindows.ShowDialog() == true) {
-                WebClientEx client = new WebClientEx();
-                client.Proxy = null; //no lag
-                client.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
-                client.DownloadFileAsync(new Uri(linksWindows.url), linksWindows.filename);
-                client.DownloadProgressChanged += wc_DownloadProgressChanged;
+            if (linksWindows.ShowDialog() == true)
+            {
+                client = new DownloadClient(linksWindows.url, linksWindows.filename);
+                client.OnDownloadProgressChanged += Client_OnDownloadProgressChanged;
+                client.OnDownloadProgressCompleted += Client_OnDownloadProgressCompleted;
                 client.Index = index;
-                client.Filename = linksWindows.filename;
+                client.Start();
                 sw.Start();
-
-                DataView.Items.Add(new MyData() { Name = linksWindows.filename, Progress = 0, Client = client });
-
-                index++;                
-            }
+                DataView.Items.Add(new MyData() { Name = linksWindows.filename, Progress = 0, Client = client});
+                index++;
+            }            
         }
-
-        void wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        
+        private void Client_OnDownloadProgressChanged(object sender)
         {
-            WebClientEx c = sender as WebClientEx;
+            DownloadClient c = sender as DownloadClient;
 
-            speed = e.BytesReceived / 1024 / sw.Elapsed.TotalSeconds;
             MyData item = DataView.Items[c.Index] as MyData;
-            item.Name = c.Filename;
-            item.Size = string.Format("{0} / {1}", ConvertFileSize(e.BytesReceived), ConvertFileSize(e.TotalBytesToReceive));
-            item.Progress = e.ProgressPercentage;
-            item.Percent = e.ProgressPercentage;
-            item.Speed = string.Format("{0} kB/s", speed.ToString("0.0"));            
-            item.Remaining = ConvertTime((e.TotalBytesToReceive - e.BytesReceived) * sw.Elapsed.TotalSeconds / e.BytesReceived);            
+            item.Size = string.Format("{0} / {1}", ConvertFileSize(c.BytesDownloaded), ConvertFileSize(c.FileSize));
+            item.Progress = c.Percentage;
+            item.Percent = c.Percentage;
+            speed = c.BytesDownloaded / 1024 / sw.Elapsed.TotalSeconds;
+            item.Speed = string.Format("{0} kB/s", speed.ToString("0.0"));
+            item.Remaining = ConvertTime((c.FileSize - c.BytesDownloaded) * sw.Elapsed.TotalSeconds / c.BytesDownloaded);
 
             DataView.Items.Refresh();
-        }
 
-        private void Completed(object sender, AsyncCompletedEventArgs e)
+        }      
+        
+        private void Client_OnDownloadProgressCompleted(object sender, bool cancel)
         {
-            WebClientEx c = sender as WebClientEx;
-            sw.Reset();
-            if (e.Cancelled)
+            Dispatcher.Invoke(delegate
             {
-                File.Delete(c.Filename);
-                c.Dispose();                
-                return;
-            }
-        }
+                DownloadClient c = sender as DownloadClient;
+                sw.Reset();
+                MyData item = DataView.Items[c.Index] as MyData;
+
+                if (cancel)
+                {
+                    item.Size = "";
+                    item.Progress = 0;
+                    item.Percent = 0;
+                    item.Speed = "";
+                    item.Remaining = "Zrušeno";                    
+                }
+                else
+                {
+                    item.Remaining = "Dokončeno";
+                }               
+
+                DataView.Items.Refresh();
+            });
+        }       
 
         private string ConvertFileSize(long bytes)
         {
@@ -155,13 +166,7 @@ namespace downloader3
             if (MessageBox.Show("Opravdu chcete smazat tento soubor?", "Zrušit", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 MyData item = DataView.SelectedItem as MyData;
-                item.Client.CancelAsync();
-                item.Size = "";
-                item.Progress = 0;
-                item.Percent = 0;
-                item.Speed = "";
-                item.Remaining = "Zrušeno";
-                DataView.Items.Refresh();
+                item.Client.Cancel();                
             }
         }
     }
@@ -170,16 +175,10 @@ namespace downloader3
     {
         public string Name { get; set; }
         public string Size { get; set; }
-        public int Progress { get; set; }
-        public int Percent { get; set; }
+        public float Progress { get; set; }
+        public float Percent { get; set; }
         public string Speed { get; set; }
         public string Remaining { get; set; }
-        public WebClientEx Client;
-    }  
-    
-    public class WebClientEx : WebClient
-    {
-        public int Index { get; set; }
-        public string Filename { get; set; }
-    }  
+        public DownloadClient Client;
+    }      
 }
