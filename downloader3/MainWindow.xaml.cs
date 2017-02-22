@@ -19,6 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
 using System.Windows.Threading;
+using System.Drawing;
 
 namespace downloader3
 {
@@ -28,8 +29,7 @@ namespace downloader3
     public partial class MainWindow : Window
     {              
         double speed;
-        int index;
-        Stopwatch sw = new Stopwatch();        
+        int index;              
         DownloadClient client;
 
         public MainWindow()
@@ -50,8 +50,12 @@ namespace downloader3
                 client.OnDownloadProgressCompleted += Client_OnDownloadProgressCompleted;
                 client.Index = index;
                 client.Start();
-                sw.Start();
-                DataView.Items.Add(new MyData() { Name = linksWindows.filename, Progress = 0, Client = client});
+                MyData item = new MyData();                
+                item.Name = System.IO.Path.GetFileName(linksWindows.filename);
+                item.Filename = linksWindows.filename;
+                item.Progress = 0;
+                item.Client = client;
+                DataView.Items.Add(item);                
                 index++;
             }            
         }
@@ -62,34 +66,34 @@ namespace downloader3
 
             MyData item = DataView.Items[c.Index] as MyData;
             item.Size = string.Format("{0} / {1}", ConvertFileSize(c.BytesDownloaded), ConvertFileSize(c.FileSize));
-            item.Progress = c.Percentage;
-            item.Percent = c.Percentage;
-            speed = c.BytesDownloaded / 1024 / sw.Elapsed.TotalSeconds;
+            item.Progress = c.Percentage;                      
+            speed = c.BytesPerSecond / 1024;
             item.Speed = string.Format("{0} kB/s", speed.ToString("0.0"));
-            item.Remaining = ConvertTime((c.FileSize - c.BytesDownloaded) * sw.Elapsed.TotalSeconds / c.BytesDownloaded);
+            item.Remaining = ConvertTime(c.SecondsRemaining);
+            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.Filename);
+            var bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            sysicon.Dispose();
+            item.Icon = bmpSrc;
 
-            DataView.Items.Refresh();
-
+            DataView.Items.Refresh();            
         }      
         
         private void Client_OnDownloadProgressCompleted(object sender, bool cancel)
         {
             Dispatcher.Invoke(delegate
             {
-                DownloadClient c = sender as DownloadClient;
-                sw.Reset();
+                DownloadClient c = sender as DownloadClient;                
                 MyData item = DataView.Items[c.Index] as MyData;
-
                 if (cancel)
                 {
                     item.Size = "";
-                    item.Progress = 0;
-                    item.Percent = 0;
+                    item.Progress = 0;               
                     item.Speed = "";
                     item.Remaining = "Zrušeno";                    
                 }
                 else
                 {
+                    item.Progress = 100;
                     item.Remaining = "Dokončeno";
                 }               
 
@@ -103,20 +107,20 @@ namespace downloader3
             double GB = Math.Pow(1024, 3);
             double TB = Math.Pow(1024, 4);
 
-            if (bytes >= TB) return string.Format("{0:0.00} TB", (bytes / TB));
-            else if (bytes >= GB) return string.Format("{0:0.00} GB", (bytes / GB));
-            else if (bytes >= 1) return string.Format("{0:0.00} MB", (bytes / MB));
+            if (bytes >= TB) return string.Format("{0:0.0} TB", (bytes / TB));
+            else if (bytes >= GB) return string.Format("{0:0.0} GB", (bytes / GB));
+            else if (bytes >= 1) return string.Format("{0:0.0} MB", (bytes / MB));
 
             else return "error";
         }        
 
-        private string ConvertTime(double dSeconds)
-        {   
+        private string ConvertTime(double seconds)
+        {
             string[] words = { "sekund", "minut", "hodin" };                        
             string str = " ";
-            int[] time = new int[3];
+            int[] time = new int[3];            
             
-            time[0] = Convert.ToInt32(dSeconds);
+            time[0] = Convert.ToInt32(seconds);
             time[1] = time[0] / 60;
             time[0] = time[0] - (time[1] * 60);
             time[2] = time[1] / 60;
@@ -141,7 +145,7 @@ namespace downloader3
             if (DataView.SelectedIndex == -1) return;
 
             MyData item = DataView.SelectedItem as MyData;
-            Process.Start(item.Name);         
+            Process.Start(item.Filename);         
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)
@@ -154,7 +158,7 @@ namespace downloader3
             ProcessStartInfo startInfo = new ProcessStartInfo();
 
             startInfo.FileName = "explorer.exe";
-            startInfo.Arguments = "/select, " + item.Name;
+            startInfo.Arguments = "/select, " + item.Filename;
             process.StartInfo = startInfo;
             process.Start();
         }
@@ -169,14 +173,42 @@ namespace downloader3
                 item.Client.Cancel();                
             }
         }
+
+        private void buttonPause_Click(object sender, RoutedEventArgs e)
+        {
+            MyData item = DataView.SelectedItem as MyData;
+            item.Client.Pause();
+            item.Remaining = "Pozastaveno";
+            item.Speed = "";
+            DataView.Items.Refresh();
+        }
+
+        private void buttonResume_Click(object sender, RoutedEventArgs e)
+        {
+            MyData item = DataView.SelectedItem as MyData;
+            item.Client.Resume();
+        }
+
+        private void buttonSettings_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow settingsWindow = new SettingsWindow();
+            settingsWindow.Owner = this;
+            settingsWindow.ShowDialog();
+        }
+
+        private void buttonLimit_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 
     internal class MyData
     {
+        public ImageSource Icon { get; set; }
         public string Name { get; set; }
+        public string Filename { get; set; }
         public string Size { get; set; }
-        public float Progress { get; set; }
-        public float Percent { get; set; }
+        public float Progress { get; set; }        
         public string Speed { get; set; }
         public string Remaining { get; set; }
         public DownloadClient Client;

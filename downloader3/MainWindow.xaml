@@ -19,35 +19,37 @@
                     <Setter Property="ContextMenu" Value="{StaticResource ItemContextMenu}" />
                 </Style>
             </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <Label Content="{Binding Name}" />
-                        <ProgressBar Grid.Column="1" Height="20" Width="100" Value="{Binding Progress}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Width="160" Header="Název souboru" DisplayMemberBinding="{Binding Name}"/>
-                    <GridViewColumn Width="150" Header="Velikost" DisplayMemberBinding="{Binding Size}"/>
-                    <GridViewColumn x:Name="col1" Width="100" Header="Průběh" >
+                    <GridViewColumn Width="30" Header="">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <ProgressBar Height="20" Width="{Binding ElementName=col1, Path=Width}" Value="{Binding Progress}" />
+                                <Image Height="16" Width="16" Source="{Binding Icon}"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Width="30" Header="%" DisplayMemberBinding="{Binding Percent}"/>
-                    <GridViewColumn Width="100" Header="Rychlost" DisplayMemberBinding="{Binding Speed}"/>
+                    <GridViewColumn Width="130" Header="Název" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Width="120" Header="Velikost" DisplayMemberBinding="{Binding Size}"/>
+                    <GridViewColumn x:Name="col1" Width="160" Header="Průběh" >
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <ProgressBar x:Name="pbStatus" Height="20" Width="{Binding ElementName=col1, Path=Width}" Value="{Binding Progress}" />
+                                    <TextBlock Text="{Binding ElementName=pbStatus, Path=Value, StringFormat={}{0:0.0}%}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Width="90" Header="Rychlost" DisplayMemberBinding="{Binding Speed}"/>
                     <GridViewColumn Width="100" Header="Zbývající čas" DisplayMemberBinding="{Binding Remaining}"/>
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="buttonAdd" Content="+" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="30" Click="buttonAdd_Click" Height="30" FontSize="16"/>
-        <Button x:Name="buttonPause" Content="Pozastavit" HorizontalAlignment="Left" Margin="100,10,0,0" VerticalAlignment="Top" Width="90" Height="30"/>
-        <Button x:Name="buttonResume" Content="Obnovit" HorizontalAlignment="Left" Margin="206,10,0,0" VerticalAlignment="Top" Width="90" Height="30" RenderTransformOrigin="0.511,0.533"/>
-        <Button x:Name="buttonCancel" Content="Zrušit" HorizontalAlignment="Left" Margin="312,10,0,0" VerticalAlignment="Top" Width="90" Height="30" Click="buttonCancel_Click"/>
-        <Button x:Name="buttonSettings" Content="Nastavení" Margin="0,11,10,0" HorizontalAlignment="Right" Width="90" Height="30" VerticalAlignment="Top"/>
+        <Button x:Name="buttonAdd" Content="+" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="30" Click="buttonAdd_Click" Height="30" FontSize="16" ToolTip="Přidat odkazy"/>
+        <Button x:Name="buttonPause" Content="Pozastavit" HorizontalAlignment="Left" Margin="100,10,0,0" VerticalAlignment="Top" Width="80" Height="30" Click="buttonPause_Click"/>
+        <Button x:Name="buttonResume" Content="Obnovit" HorizontalAlignment="Left" Margin="185,10,0,0" VerticalAlignment="Top" Width="70" Height="30" RenderTransformOrigin="0.511,0.533" Click="buttonResume_Click"/>
+        <Button x:Name="buttonCancel" Content="Zrušit" HorizontalAlignment="Left" Margin="260,10,0,0" VerticalAlignment="Top" Width="70" Height="30" Click="buttonCancel_Click"/>
+        <Button x:Name="buttonSettings" Content="Nastavení" Margin="0,10,10,0" HorizontalAlignment="Right" Width="80" Height="30" VerticalAlignment="Top" Click="buttonSettings_Click"/>
+        <Button x:Name="buttonLimit" Content="Omezit rychlost" HorizontalAlignment="Left" Margin="362,10,0,0" VerticalAlignment="Top" Width="95" Height="30" Click="buttonLimit_Click"/>
     </Grid>
 </Window>
