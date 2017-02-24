@@ -1,0 +1,31 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:downloader3"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    
+    <system:String x:Key="lang_name">Name</system:String>
+    <system:String x:Key="lang_size">Size</system:String>
+    <system:String x:Key="lang_status">Status</system:String>
+    <system:String x:Key="lang_speed">Speed</system:String>
+    <system:String x:Key="lang_time">Remaining time</system:String>
+
+    <system:String x:Key="lang_pause">Pause</system:String>
+    <system:String x:Key="lang_resume">Resume</system:String>
+    <system:String x:Key="lang_cancel">Cancel</system:String>    
+    <system:String x:Key="lang_settings">Settings</system:String>
+
+    <system:String x:Key="lang_addlinks">Add links</system:String>
+    <system:String x:Key="lang_save">Save</system:String>
+
+    <system:String x:Key="lang_open">Open</system:String>
+    <system:String x:Key="lang_openinfolder">Open in folder</system:String>
+
+    <system:String x:Key="lang_language">Language:</system:String>
+    <system:String x:Key="lang_speedlimit">Speed limit:</system:String>
+    
+    <system:String x:Key="lang_confirm_delete">Do you want to delete this file?</system:String>
+    <system:String x:Key="lang_canceled">Canceled</system:String>
+    <system:String x:Key="lang_paused">Paused</system:String>
+    <system:String x:Key="lang_completed">Finished</system:String>
+</ResourceDictionary>

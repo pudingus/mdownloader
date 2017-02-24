@@ -1,0 +1,31 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:downloader3"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    
+    <system:String x:Key="lang_name">Název</system:String>
+    <system:String x:Key="lang_size">Velikost</system:String>
+    <system:String x:Key="lang_status">Průběh</system:String>
+    <system:String x:Key="lang_speed">Rychlost</system:String>
+    <system:String x:Key="lang_time">Zbývající čas</system:String>
+
+    <system:String x:Key="lang_pause">Pozastavit</system:String>
+    <system:String x:Key="lang_resume">Obnovit</system:String>
+    <system:String x:Key="lang_cancel">Zrušit</system:String>
+    <system:String x:Key="lang_settings">Nastavení</system:String>
+
+    <system:String x:Key="lang_addlinks">Přidat odkazy</system:String>
+    <system:String x:Key="lang_save">Uložit</system:String>
+
+    <system:String x:Key="lang_open">Otevřít</system:String>
+    <system:String x:Key="lang_openinfolder">Otevřít ve složce</system:String>
+    
+    <system:String x:Key="lang_language">Jazyk:</system:String>
+    <system:String x:Key="lang_speedlimit">Omezit rychlost:</system:String>
+
+    <system:String x:Key="lang_confirm_delete">Opravdu chcete smazat tento soubor?</system:String>
+    <system:String x:Key="lang_canceled">Zrušeno</system:String>
+    <system:String x:Key="lang_paused">Pozastaveno</system:String>
+    <system:String x:Key="lang_completed">Dokončeno</system:String>
+</ResourceDictionary>

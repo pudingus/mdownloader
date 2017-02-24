@@ -27,17 +27,19 @@ namespace downloader3
     /// Interakční logika pro MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
-    {              
+    {
         double speed;
-        int index;              
+        int index;
         DownloadClient client;
+
+        long speedLimit = 1000;     //kB/s
+        int langIndex = 0;          //čeština
 
         public MainWindow()
         {
             InitializeComponent();
-
             index = 0;
-        }        
+        }
 
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
         {
@@ -49,24 +51,25 @@ namespace downloader3
                 client.OnDownloadProgressChanged += Client_OnDownloadProgressChanged;
                 client.OnDownloadProgressCompleted += Client_OnDownloadProgressCompleted;
                 client.Index = index;
+                client.SpeedLimit = speedLimit;
                 client.Start();
-                MyData item = new MyData();                
+                MyData item = new MyData();
                 item.Name = System.IO.Path.GetFileName(linksWindows.filename);
                 item.Filename = linksWindows.filename;
                 item.Progress = 0;
                 item.Client = client;
-                DataView.Items.Add(item);                
+                DataView.Items.Add(item);
                 index++;
-            }            
+            }
         }
-        
+
         private void Client_OnDownloadProgressChanged(object sender)
         {
             DownloadClient c = sender as DownloadClient;
 
             MyData item = DataView.Items[c.Index] as MyData;
             item.Size = string.Format("{0} / {1}", ConvertFileSize(c.BytesDownloaded), ConvertFileSize(c.FileSize));
-            item.Progress = c.Percentage;                      
+            item.Progress = c.Percentage;
             speed = c.BytesPerSecond / 1024;
             item.Speed = string.Format("{0} kB/s", speed.ToString("0.0"));
             item.Remaining = ConvertTime(c.SecondsRemaining);
@@ -75,31 +78,31 @@ namespace downloader3
             sysicon.Dispose();
             item.Icon = bmpSrc;
 
-            DataView.Items.Refresh();            
-        }      
-        
+            DataView.Items.Refresh();
+        }
+
         private void Client_OnDownloadProgressCompleted(object sender, bool cancel)
         {
             Dispatcher.Invoke(delegate
             {
-                DownloadClient c = sender as DownloadClient;                
+                DownloadClient c = sender as DownloadClient;
                 MyData item = DataView.Items[c.Index] as MyData;
                 if (cancel)
                 {
                     item.Size = "";
-                    item.Progress = 0;               
+                    item.Progress = 0;
                     item.Speed = "";
-                    item.Remaining = "Zrušeno";                    
+                    item.Remaining = Translate("lang_canceled");
                 }
                 else
                 {
                     item.Progress = 100;
-                    item.Remaining = "Dokončeno";
-                }               
+                    item.Remaining = Translate("lang_completed");
+                }
 
                 DataView.Items.Refresh();
             });
-        }       
+        }
 
         private string ConvertFileSize(long bytes)
         {
@@ -112,51 +115,43 @@ namespace downloader3
             else if (bytes >= 1) return string.Format("{0:0.0} MB", (bytes / MB));
 
             else return "error";
-        }        
+        }
 
         private string ConvertTime(double seconds)
         {
-            string[] words = { "sekund", "minut", "hodin" };                        
             string str = " ";
-            int[] time = new int[3];            
-            
-            time[0] = Convert.ToInt32(seconds);
-            time[1] = time[0] / 60;
-            time[0] = time[0] - (time[1] * 60);
-            time[2] = time[1] / 60;
-            time[1] = time[1] - (time[2] * 60);
-            
-            for (int i = 0; i < 3; i++) 
-            {
-                if (time[i] == 1) words[i] += 'a';
-                else if (time[i] >= 2 && time[i] <= 4) words[i] += 'y';                
-            }
+            int sec, min, hour;
 
-            if (time[2] == 0 && time[1] == 0) str = string.Format("{0} {1}", time[0], words[0]);             
-            else if (time[1] >= 1 && time[2] == 0) str = string.Format("{0} {1}", time[1], words[1]);            
-            else if (time[2] >= 1 && time[1] == 0) str = string.Format("{0} {1}", time[2], words[2]);            
-            else str = string.Format("{0} {1} a {2} {3}", time[2], words[2], time[1], words[1]);          
+            sec = Convert.ToInt32(seconds);
+            min = sec / 60;
+            sec = sec - (min * 60);
+            hour = min / 60;
+            min = min - (hour * 60);
 
-            return str;           
-        }                
+            if (hour == 0 && min == 0) str = string.Format("{0}s", sec);
+            else if (min >= 1 && hour == 0) str = string.Format("{0}m {1}s", min, sec);
+            else if (hour >= 1 && min == 0) str = string.Format("{0}h", hour);
+            else str = string.Format("{0}h a {1}m", hour, min);
+
+            return str;
+        }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             if (DataView.SelectedIndex == -1) return;
 
             MyData item = DataView.SelectedItem as MyData;
-            Process.Start(item.Filename);         
+            Process.Start(item.Filename);
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)
         {
             if (DataView.SelectedIndex == -1) return;
 
-            MyData item = DataView.SelectedItem as MyData;           
+            MyData item = DataView.SelectedItem as MyData;
 
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
-
             startInfo.FileName = "explorer.exe";
             startInfo.Arguments = "/select, " + item.Filename;
             process.StartInfo = startInfo;
@@ -167,10 +162,10 @@ namespace downloader3
         {
             if (DataView.SelectedIndex == -1) return;
 
-            if (MessageBox.Show("Opravdu chcete smazat tento soubor?", "Zrušit", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (MessageBox.Show(Translate("lang_confirm_delete"), Translate("lang_cancel"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 MyData item = DataView.SelectedItem as MyData;
-                item.Client.Cancel();                
+                item.Client.Cancel();
             }
         }
 
@@ -178,7 +173,7 @@ namespace downloader3
         {
             MyData item = DataView.SelectedItem as MyData;
             item.Client.Pause();
-            item.Remaining = "Pozastaveno";
+            item.Remaining = Translate("lang_paused");
             item.Speed = "";
             DataView.Items.Refresh();
         }
@@ -193,12 +188,36 @@ namespace downloader3
         {
             SettingsWindow settingsWindow = new SettingsWindow();
             settingsWindow.Owner = this;
-            settingsWindow.ShowDialog();
+            settingsWindow.speedLimit.Text = speedLimit.ToString();
+            settingsWindow.langSelection.SelectedIndex = langIndex;
+            if (settingsWindow.ShowDialog() == true)
+            {
+                speedLimit = Int64.Parse(settingsWindow.speedLimit.Text);
+                langIndex = settingsWindow.langSelection.SelectedIndex;
+                RefreshLanguage();
+            }
         }
 
-        private void buttonLimit_Click(object sender, RoutedEventArgs e)
+        public void RefreshLanguage()
         {
+            foreach (MyData item in DataView.Items)
+            {
+                if (item.Client.Paused) item.Remaining = Translate("lang_paused");
+                if (item.Client.Canceled) item.Remaining = Translate("lang_canceled");
+                if (item.Client.Completed) item.Remaining = Translate("lang_completed");
+            }
+            DataView.Items.Refresh();
+        }
 
+        public string Translate(string resource)
+        {
+            string result = (string)TryFindResource(resource);
+            if (result == null)
+            {
+                MessageBox.Show("Language resource \"" + resource + "\" is invalid", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return resource;
+            }
+            return result;
         }
     }
 
@@ -208,9 +227,9 @@ namespace downloader3
         public string Name { get; set; }
         public string Filename { get; set; }
         public string Size { get; set; }
-        public float Progress { get; set; }        
+        public float Progress { get; set; }
         public string Speed { get; set; }
         public string Remaining { get; set; }
         public DownloadClient Client;
-    }      
+    }
 }

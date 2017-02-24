@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,6 +23,20 @@ namespace downloader3
         public SettingsWindow()
         {
             InitializeComponent();
+        }
+
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+"); //pouze čísla
+            e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void buttonSave_Click(object sender, RoutedEventArgs e)
+        {
+            if (langSelection.SelectedIndex == 0) App.SelectCulture("cs-CZ");
+            else if (langSelection.SelectedIndex == 1) App.SelectCulture("en-US");
+            DialogResult = true;
+            Close();
         }
     }
 }

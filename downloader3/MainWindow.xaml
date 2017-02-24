@@ -10,8 +10,8 @@
         <ListView x:Name="DataView" Margin="10,57,10,10">
             <ListView.Resources>
                 <ContextMenu x:Key="ItemContextMenu">
-                    <MenuItem Header="Přehrát" Background="WhiteSmoke" Click="MenuItem_Click" />
-                    <MenuItem Header="Otevřít složce" Background="WhiteSmoke" Click="MenuItem_Click_1" />
+                    <MenuItem Header="{DynamicResource lang_open}" Background="WhiteSmoke" Click="MenuItem_Click" />
+                    <MenuItem Header="{DynamicResource lang_openinfolder}" Background="WhiteSmoke" Click="MenuItem_Click_1" />
                 </ContextMenu>
             </ListView.Resources>
             <ListView.ItemContainerStyle>
@@ -28,9 +28,9 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Width="130" Header="Název" DisplayMemberBinding="{Binding Name}"/>
-                    <GridViewColumn Width="120" Header="Velikost" DisplayMemberBinding="{Binding Size}"/>
-                    <GridViewColumn x:Name="col1" Width="160" Header="Průběh" >
+                    <GridViewColumn Width="130" Header="{DynamicResource lang_name}" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Width="120" Header="{DynamicResource lang_size}" DisplayMemberBinding="{Binding Size}"/>
+                    <GridViewColumn x:Name="col1" Width="160" Header="{DynamicResource lang_status}" >
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -40,16 +40,15 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Width="90" Header="Rychlost" DisplayMemberBinding="{Binding Speed}"/>
-                    <GridViewColumn Width="100" Header="Zbývající čas" DisplayMemberBinding="{Binding Remaining}"/>
+                    <GridViewColumn Width="90" Header="{DynamicResource lang_speed}" DisplayMemberBinding="{Binding Speed}"/>
+                    <GridViewColumn Width="100" Header="{DynamicResource lang_time}" DisplayMemberBinding="{Binding Remaining}"/>
                 </GridView>
             </ListView.View>
         </ListView>
         <Button x:Name="buttonAdd" Content="+" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="30" Click="buttonAdd_Click" Height="30" FontSize="16" ToolTip="Přidat odkazy"/>
-        <Button x:Name="buttonPause" Content="Pozastavit" HorizontalAlignment="Left" Margin="100,10,0,0" VerticalAlignment="Top" Width="80" Height="30" Click="buttonPause_Click"/>
-        <Button x:Name="buttonResume" Content="Obnovit" HorizontalAlignment="Left" Margin="185,10,0,0" VerticalAlignment="Top" Width="70" Height="30" RenderTransformOrigin="0.511,0.533" Click="buttonResume_Click"/>
-        <Button x:Name="buttonCancel" Content="Zrušit" HorizontalAlignment="Left" Margin="260,10,0,0" VerticalAlignment="Top" Width="70" Height="30" Click="buttonCancel_Click"/>
-        <Button x:Name="buttonSettings" Content="Nastavení" Margin="0,10,10,0" HorizontalAlignment="Right" Width="80" Height="30" VerticalAlignment="Top" Click="buttonSettings_Click"/>
-        <Button x:Name="buttonLimit" Content="Omezit rychlost" HorizontalAlignment="Left" Margin="362,10,0,0" VerticalAlignment="Top" Width="95" Height="30" Click="buttonLimit_Click"/>
+        <Button x:Name="buttonPause" Content="{DynamicResource lang_pause}" HorizontalAlignment="Left" Margin="100,10,0,0" VerticalAlignment="Top" Width="80" Height="30" Click="buttonPause_Click"/>
+        <Button x:Name="buttonResume" Content="{DynamicResource lang_resume}" HorizontalAlignment="Left" Margin="185,10,0,0" VerticalAlignment="Top" Width="70" Height="30" RenderTransformOrigin="0.511,0.533" Click="buttonResume_Click"/>
+        <Button x:Name="buttonCancel" Content="{DynamicResource lang_cancel}" HorizontalAlignment="Left" Margin="260,10,0,0" VerticalAlignment="Top" Width="70" Height="30" Click="buttonCancel_Click"/>
+        <Button x:Name="buttonSettings" Content="{DynamicResource lang_settings}" Margin="0,10,10,0" HorizontalAlignment="Right" Width="80" Height="30" VerticalAlignment="Top" Click="buttonSettings_Click"/>
     </Grid>
 </Window>
