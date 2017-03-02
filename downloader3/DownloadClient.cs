@@ -33,7 +33,8 @@ namespace downloader3
         private string filename;
         private long processed;
         private Thread downloadThread;
-        private DispatcherTimer timer, timer2 = new DispatcherTimer();
+        private DispatcherTimer timer = new DispatcherTimer();
+        private DispatcherTimer timer2 = new DispatcherTimer();
         private Stopwatch sw = new Stopwatch();
         private AutoResetEvent wh = new AutoResetEvent(true);
 

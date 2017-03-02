@@ -20,11 +20,12 @@ namespace downloader3
     /// </summary>
     public partial class SettingsWindow : Window
     {
+        public string language;
         public SettingsWindow()
         {
             InitializeComponent();
         }
-
+        
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
         {
             Regex regex = new Regex("[^0-9]+"); //pouze čísla
@@ -33,8 +34,8 @@ namespace downloader3
 
         private void buttonSave_Click(object sender, RoutedEventArgs e)
         {
-            if (langSelection.SelectedIndex == 0) App.SelectCulture("cs-CZ");
-            else if (langSelection.SelectedIndex == 1) App.SelectCulture("en-US");
+            if (langSelection.SelectedIndex == 0) language = "cs-CZ";
+            else if (langSelection.SelectedIndex == 1) language = "en-US";            
             DialogResult = true;
             Close();
         }

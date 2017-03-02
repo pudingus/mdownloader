@@ -34,11 +34,16 @@ namespace downloader3
 
         long speedLimit = 1000;     //kB/s
         int langIndex = 0;          //čeština
+        
 
         public MainWindow()
         {
             InitializeComponent();
             index = 0;
+            
+            speedLimit = Properties.Settings.Default.speedlimit;
+            App.SelectCulture(Properties.Settings.Default.language);
+
         }
 
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
@@ -189,11 +194,19 @@ namespace downloader3
             SettingsWindow settingsWindow = new SettingsWindow();
             settingsWindow.Owner = this;
             settingsWindow.speedLimit.Text = speedLimit.ToString();
-            settingsWindow.langSelection.SelectedIndex = langIndex;
-            if (settingsWindow.ShowDialog() == true)
+            if (Properties.Settings.Default.language == "cs-CZ") settingsWindow.langSelection.SelectedIndex = 0;
+            if (Properties.Settings.Default.language == "en-US") settingsWindow.langSelection.SelectedIndex = 1;
+
+            if (settingsWindow.ShowDialog() == true) //save settings
             {
                 speedLimit = Int64.Parse(settingsWindow.speedLimit.Text);
                 langIndex = settingsWindow.langSelection.SelectedIndex;
+
+                Properties.Settings.Default.speedlimit = speedLimit;
+                Properties.Settings.Default.language = settingsWindow.language;
+                App.SelectCulture(Properties.Settings.Default.language);
+                Properties.Settings.Default.Save();
+
                 RefreshLanguage();
             }
         }
