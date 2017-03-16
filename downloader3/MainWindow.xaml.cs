@@ -30,20 +30,14 @@ namespace downloader3
     {
         double speed;
         int index;
-        DownloadClient client;
-
-        long speedLimit = 1000;     //kB/s
-        int langIndex = 0;          //čeština
-        
+        DownloadClient client; 
 
         public MainWindow()
         {
             InitializeComponent();
-            index = 0;
+            index = 0;            
             
-            speedLimit = Properties.Settings.Default.speedlimit;
             App.SelectCulture(Properties.Settings.Default.language);
-
         }
 
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
@@ -56,7 +50,7 @@ namespace downloader3
                 client.OnDownloadProgressChanged += Client_OnDownloadProgressChanged;
                 client.OnDownloadProgressCompleted += Client_OnDownloadProgressCompleted;
                 client.Index = index;
-                client.SpeedLimit = speedLimit;
+                client.SpeedLimit = Properties.Settings.Default.speedlimit;
                 client.Start();
                 MyData item = new MyData();
                 item.Name = System.IO.Path.GetFileName(linksWindows.filename);
@@ -166,7 +160,6 @@ namespace downloader3
         private void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
             if (DataView.SelectedIndex == -1) return;
-
             if (MessageBox.Show(Translate("lang_confirm_delete"), Translate("lang_cancel"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 MyData item = DataView.SelectedItem as MyData;
@@ -193,16 +186,12 @@ namespace downloader3
         {
             SettingsWindow settingsWindow = new SettingsWindow();
             settingsWindow.Owner = this;
-            settingsWindow.speedLimit.Text = speedLimit.ToString();
+            settingsWindow.speedLimit.Text = Properties.Settings.Default.speedlimit.ToString();
             if (Properties.Settings.Default.language == "cs-CZ") settingsWindow.langSelection.SelectedIndex = 0;
             if (Properties.Settings.Default.language == "en-US") settingsWindow.langSelection.SelectedIndex = 1;
-
             if (settingsWindow.ShowDialog() == true) //save settings
-            {
-                speedLimit = Int64.Parse(settingsWindow.speedLimit.Text);
-                langIndex = settingsWindow.langSelection.SelectedIndex;
-
-                Properties.Settings.Default.speedlimit = speedLimit;
+            {  
+                Properties.Settings.Default.speedlimit = Int64.Parse(settingsWindow.speedLimit.Text);
                 Properties.Settings.Default.language = settingsWindow.language;
                 App.SelectCulture(Properties.Settings.Default.language);
                 Properties.Settings.Default.Save();
@@ -231,6 +220,46 @@ namespace downloader3
                 return resource;
             }
             return result;
+        }
+
+        private void buttonUp_Click(object sender, RoutedEventArgs e)
+        {
+            int index = DataView.SelectedIndex;
+
+            if (index > 0)
+            {
+                object item = DataView.SelectedItem;
+                DataView.Items.RemoveAt(index);
+                DataView.Items.Insert(index - 1, item);
+                DataView.SelectedItems.Add(item);
+            }
+
+        }
+
+        private void buttonDown_Click(object sender, RoutedEventArgs e)
+        {            
+            int index = DataView.SelectedIndex;
+
+            if (index < DataView.Items.Count - 1)
+            {                
+                object item = DataView.SelectedItem;                
+                DataView.Items.RemoveAt(index);
+                DataView.Items.Insert(index + 1, item);
+                DataView.SelectedItems.Add(item);
+            }                
+        }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                MyData item = new MyData();
+                item.Name = "item"+i.ToString();
+                item.Filename = "item" + i.ToString();
+                item.Progress = 69;
+                item.Client = client;
+                DataView.Items.Add(item);
+            }
         }
     }
 

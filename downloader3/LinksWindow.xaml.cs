@@ -22,23 +22,23 @@ namespace downloader3
     {
         public LinksWindow()
         {
-            InitializeComponent();
+            InitializeComponent();            
         }
 
         public string filename;
         public string url;
         private void button_Click(object sender, RoutedEventArgs e)
         {            
-            SaveFileDialog s = new SaveFileDialog();
-            Uri uri = new Uri(textBox.Text);            
-            s.FileName = System.IO.Path.GetFileName(uri.LocalPath);
-            if (s.ShowDialog() == true)
+            SaveFileDialog saveDialog = new SaveFileDialog();
+            Uri uri = new Uri(comboBox.Text);            //
+            saveDialog.FileName = System.IO.Path.GetFileName(uri.LocalPath);
+            if (saveDialog.ShowDialog() == true)
             {
-                filename = s.FileName;
-                url = textBox.Text;
+                filename = saveDialog.FileName;
+                url = comboBox.Text;
                 DialogResult = true;
                 Close();
             }
-        }
+        }        
     }
 }
