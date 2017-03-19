@@ -2,7 +2,7 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="downloader3.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="speedlimit" Type="System.Int64" Scope="User">
+    <Setting Name="speedLimit" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1000</Value>
     </Setting>
     <Setting Name="language" Type="System.String" Scope="User">

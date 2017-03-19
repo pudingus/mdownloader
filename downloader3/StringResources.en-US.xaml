@@ -28,4 +28,5 @@
     <system:String x:Key="lang_canceled">Canceled</system:String>
     <system:String x:Key="lang_paused">Paused</system:String>
     <system:String x:Key="lang_completed">Finished</system:String>
+    <system:String x:Key="lang_rename">Rename</system:String>
 </ResourceDictionary>

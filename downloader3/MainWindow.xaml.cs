@@ -46,17 +46,17 @@ namespace downloader3
             linksWindows.Owner = this;
             if (linksWindows.ShowDialog() == true)
             {
-                client = new DownloadClient(linksWindows.url, linksWindows.filename);
+                client = new DownloadClient(linksWindows.url, linksWindows.fileName);
                 client.OnDownloadProgressChanged += Client_OnDownloadProgressChanged;
                 client.OnDownloadProgressCompleted += Client_OnDownloadProgressCompleted;
                 client.Index = index;
-                client.SpeedLimit = Properties.Settings.Default.speedlimit;
+                client.SpeedLimit = Properties.Settings.Default.speedLimit;
                 client.Start();
                 MyData item = new MyData();
-                item.Name = System.IO.Path.GetFileName(linksWindows.filename);
-                item.Filename = linksWindows.filename;
+                item.Name = System.IO.Path.GetFileName(linksWindows.fileName);                
                 item.Progress = 0;
-                item.Client = client;
+                item.Client = client;                
+
                 DataView.Items.Add(item);
                 index++;
             }
@@ -70,12 +70,15 @@ namespace downloader3
             item.Size = string.Format("{0} / {1}", ConvertFileSize(c.BytesDownloaded), ConvertFileSize(c.FileSize));
             item.Progress = c.Percentage;
             speed = c.BytesPerSecond / 1024;
-            item.Speed = string.Format("{0} kB/s", speed.ToString("0.0"));
+            item.Speed = string.Format("{0} kB/s ({1})", speed.ToString("0.0"), item.Client.SpeedLimit);
             item.Remaining = ConvertTime(c.SecondsRemaining);
-            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.Filename);
+
+            //zbytečně se obnovuje
+            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.Client.FilePath);
             var bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             sysicon.Dispose();
             item.Icon = bmpSrc;
+            //
 
             DataView.Items.Refresh();
         }
@@ -130,7 +133,7 @@ namespace downloader3
             if (hour == 0 && min == 0) str = string.Format("{0}s", sec);
             else if (min >= 1 && hour == 0) str = string.Format("{0}m {1}s", min, sec);
             else if (hour >= 1 && min == 0) str = string.Format("{0}h", hour);
-            else str = string.Format("{0}h a {1}m", hour, min);
+            else str = string.Format("{0}h {1}m", hour, min);
 
             return str;
         }
@@ -140,7 +143,7 @@ namespace downloader3
             if (DataView.SelectedIndex == -1) return;
 
             MyData item = DataView.SelectedItem as MyData;
-            Process.Start(item.Filename);
+            Process.Start(item.Client.FilePath);
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)
@@ -152,9 +155,37 @@ namespace downloader3
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.FileName = "explorer.exe";
-            startInfo.Arguments = "/select, " + item.Filename;
+            startInfo.Arguments = "/select, " + item.Client.FilePath;
             process.StartInfo = startInfo;
             process.Start();
+        }
+
+        private void MenuItem_Click_2(object sender, RoutedEventArgs e) //Přejmenovat
+        {
+            if (DataView.SelectedIndex == -1) return;
+
+            MyData item = DataView.SelectedItem as MyData;            
+
+            RenameWindow renameWindow = new RenameWindow();
+            renameWindow.FileName = item.Name;            
+            if (renameWindow.ShowDialog() == true)
+            {
+                item.Client.Rename(renameWindow.FileName);
+                item.Name = renameWindow.FileName;
+            }
+        }
+        private void MenuItem_Click_3(object sender, RoutedEventArgs e) //Omezit rychlost
+        {
+            if (DataView.SelectedIndex == -1) return;
+
+            MyData item = DataView.SelectedItem as MyData;
+
+            BandwidthWindow bandwidthWindow = new BandwidthWindow();
+            bandwidthWindow.SpeedLimit = item.Client.SpeedLimit;
+            if (bandwidthWindow.ShowDialog() == true)
+            {
+                item.Client.SpeedLimit = bandwidthWindow.SpeedLimit;
+            }
         }
 
         private void buttonCancel_Click(object sender, RoutedEventArgs e)
@@ -186,12 +217,12 @@ namespace downloader3
         {
             SettingsWindow settingsWindow = new SettingsWindow();
             settingsWindow.Owner = this;
-            settingsWindow.speedLimit.Text = Properties.Settings.Default.speedlimit.ToString();
+            settingsWindow.speedLimit.Text = Properties.Settings.Default.speedLimit.ToString();
             if (Properties.Settings.Default.language == "cs-CZ") settingsWindow.langSelection.SelectedIndex = 0;
             if (Properties.Settings.Default.language == "en-US") settingsWindow.langSelection.SelectedIndex = 1;
             if (settingsWindow.ShowDialog() == true) //save settings
             {  
-                Properties.Settings.Default.speedlimit = Int64.Parse(settingsWindow.speedLimit.Text);
+                Properties.Settings.Default.speedLimit = Int32.Parse(settingsWindow.speedLimit.Text);
                 Properties.Settings.Default.language = settingsWindow.language;
                 App.SelectCulture(Properties.Settings.Default.language);
                 Properties.Settings.Default.Save();
@@ -254,11 +285,18 @@ namespace downloader3
             for (int i = 0; i < 3; i++)
             {
                 MyData item = new MyData();
-                item.Name = "item"+i.ToString();
-                item.Filename = "item" + i.ToString();
+                item.Name = "item"+i.ToString();                
                 item.Progress = 69;
                 item.Client = client;
                 DataView.Items.Add(item);
+            }
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            foreach (MyData item in DataView.Items)
+            {
+                
             }
         }
     }
@@ -266,8 +304,7 @@ namespace downloader3
     internal class MyData
     {
         public ImageSource Icon { get; set; }
-        public string Name { get; set; }
-        public string Filename { get; set; }
+        public string Name { get; set; }        
         public string Size { get; set; }
         public float Progress { get; set; }
         public string Speed { get; set; }

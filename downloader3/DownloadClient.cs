@@ -23,31 +23,33 @@ namespace downloader3
         public float Percentage { get; private set; }
         public long BytesPerSecond { get; private set; }
         public double SecondsRemaining { get; private set; }
-        public long SpeedLimit { get; set; } //v kilobajtech
+        public int SpeedLimit { get; set; } //v kilobajtech
         public bool Paused { get; private set; }
         public bool Canceled { get; private set; }
         public bool Completed { get; private set; }
+        public string FilePath { get; private set; }
 
         private const int chunkSize = 1024;
-        private string url;
-        private string filename;
+        private string url;        
         private long processed;
         private Thread downloadThread;
         private DispatcherTimer timer = new DispatcherTimer();
         private DispatcherTimer timer2 = new DispatcherTimer();
         private Stopwatch sw = new Stopwatch();
         private AutoResetEvent wh = new AutoResetEvent(true);
+        private bool changeName;
+        private string newPath;
 
-        public DownloadClient(string url, string filename)
+        public DownloadClient(string url, string filePath)
         {
             this.url = url;
-            this.filename = filename;
+            FilePath = filePath;
         }
 
         public void Start()
         {
             timer.Tick += new EventHandler(Timer_Tick);
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 500); //500 ms            
+            timer.Interval = new TimeSpan(0, 0, 0, 0, 2000); //500 ms            
             timer.Start();
 
             timer2.Tick += new EventHandler(Timer2_Tick);
@@ -93,10 +95,16 @@ namespace downloader3
             timer2.Start();
         }
 
+        public void Rename(string newName)
+        {
+            changeName = true;
+            newPath = Path.GetDirectoryName(FilePath) + Path.DirectorySeparatorChar + newName;
+        }
+
         private void DownloadWorker()
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            using (FileStream fs = new FileStream(filename, FileMode.Create))
+            FileStream fs = new FileStream(FilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, 65535); //64kb buffer
             using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
             {
                 Stream receiveStream = response.GetResponseStream();
@@ -108,8 +116,17 @@ namespace downloader3
 
                 while ((count = receiveStream.Read(read, 0, chunkSize)) > 0 && !Canceled) //dokud není přečten celý stream
                 {
-                    fs.Write(read, 0, count);
+                    if (changeName)
+                    {
+                        fs.Close(); 
+                        File.Move(FilePath, newPath);
+                        FilePath = newPath;
+                        fs = new FileStream(FilePath, FileMode.Append);
+                        changeName = false;
+                    }
 
+                    fs.Write(read, 0, count);                    
+                    
                     BytesDownloaded += count;
                     processed += count;
                     Percentage = ((float)BytesDownloaded / (float)FileSize) * 100;
@@ -122,7 +139,7 @@ namespace downloader3
                 timer.Stop();
                 sw.Reset();
                 OnDownloadProgressCompleted(this, Canceled);
-                if (Canceled) File.Delete(filename);
+                if (Canceled) File.Delete(FilePath);
                 else Completed = true;
             }
         }

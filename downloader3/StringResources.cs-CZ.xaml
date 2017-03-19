@@ -28,4 +28,5 @@
     <system:String x:Key="lang_canceled">Zrušeno</system:String>
     <system:String x:Key="lang_paused">Pozastaveno</system:String>
     <system:String x:Key="lang_completed">Dokončeno</system:String>
+    <system:String x:Key="lang_rename">Přejmenovat</system:String>
 </ResourceDictionary>

@@ -5,13 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:downloader3"
         mc:Ignorable="d"
-        Title="Downloader" Height="479" Width="687">
+        Title="Downloader" Height="479" Width="687" Closing="Window_Closing">
     <Grid>
         <ListView x:Name="DataView" Margin="10,57,10,10">
             <ListView.Resources>
                 <ContextMenu x:Key="ItemContextMenu">
                     <MenuItem Header="{DynamicResource lang_open}" Background="WhiteSmoke" Click="MenuItem_Click" />
                     <MenuItem Header="{DynamicResource lang_openinfolder}" Background="WhiteSmoke" Click="MenuItem_Click_1" />
+                    <MenuItem Header="{DynamicResource lang_rename}" Background="WhiteSmoke" Click="MenuItem_Click_2" />
+                    <MenuItem Header="{DynamicResource lang_speedlimit}" Background="WhiteSmoke" Click="MenuItem_Click_3" />
                 </ContextMenu>
             </ListView.Resources>
             <ListView.ItemContainerStyle>
