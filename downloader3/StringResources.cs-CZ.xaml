@@ -3,7 +3,6 @@
                     xmlns:local="clr-namespace:downloader3"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
-    
     <system:String x:Key="lang_name">Název</system:String>
     <system:String x:Key="lang_size">Velikost</system:String>
     <system:String x:Key="lang_status">Průběh</system:String>
@@ -20,7 +19,7 @@
 
     <system:String x:Key="lang_open">Otevřít</system:String>
     <system:String x:Key="lang_openinfolder">Otevřít ve složce</system:String>
-    
+
     <system:String x:Key="lang_language">Jazyk:</system:String>
     <system:String x:Key="lang_speedlimit">Omezit rychlost:</system:String>
 

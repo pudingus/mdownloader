@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         Title="RenameWindow" Height="103.783" Width="409.783">
     <Grid>
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="22" Margin="8,10,0,0" Text="TextBox" VerticalAlignment="Top" Width="366"/>
-        <Button x:Name="buttonRename" Content="Přejmenovat" HorizontalAlignment="Left" Height="24" Margin="210,38,0,0" VerticalAlignment="Top" Width="88" Click="buttonRename_Click"/>
-        <Button x:Name="buttonCancel" Content="Zrušit" HorizontalAlignment="Left" Height="24" Margin="304,38,0,0" VerticalAlignment="Top" Width="71" Click="buttonCancel_Click"/>
+        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="22" Margin="8,10,0,0" Text="TextBox" VerticalAlignment="Top" Width="366" />
+        <Button x:Name="buttonRename" Content="Přejmenovat" HorizontalAlignment="Left" Height="24" Margin="210,38,0,0" VerticalAlignment="Top" Width="88" Click="buttonRename_Click" />
+        <Button x:Name="buttonCancel" Content="Zrušit" HorizontalAlignment="Left" Height="24" Margin="304,38,0,0" VerticalAlignment="Top" Width="71" Click="buttonCancel_Click" />
     </Grid>
 </Window>

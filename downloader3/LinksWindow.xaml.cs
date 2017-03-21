@@ -1,17 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace downloader3
 {
@@ -22,15 +11,16 @@ namespace downloader3
     {
         public LinksWindow()
         {
-            InitializeComponent();            
+            InitializeComponent();
         }
 
         public string fileName;
         public string url;
+
         private void button_Click(object sender, RoutedEventArgs e)
-        {            
+        {
             SaveFileDialog saveDialog = new SaveFileDialog();
-            Uri uri = new Uri(comboBox.Text); 
+            Uri uri = new Uri(comboBox.Text);
             saveDialog.FileName = System.IO.Path.GetFileName(uri.LocalPath);
             if (saveDialog.ShowDialog() == true)
             {
@@ -39,6 +29,6 @@ namespace downloader3
                 DialogResult = true;
                 Close();
             }
-        }        
+        }
     }
 }

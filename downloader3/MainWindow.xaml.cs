@@ -1,25 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.IO;
 using System.Windows.Threading;
-using System.Drawing;
+using System.Xml;
 
 namespace downloader3
 {
@@ -28,16 +14,29 @@ namespace downloader3
     /// </summary>
     public partial class MainWindow : Window
     {
-        double speed;
-        int index;
-        DownloadClient client; 
+        private double speed;
+        private int index;
+        private DownloadClient client;
 
         public MainWindow()
         {
             InitializeComponent();
-            index = 0;            
-            
+            index = 0;
+
             App.SelectCulture(Properties.Settings.Default.language);
+
+            XmlDocument doc = new XmlDocument();
+            doc.Load("test.xml");
+
+            XmlNodeList elemList = doc.GetElementsByTagName("link");
+            for (int i = 0; i < elemList.Count; i++)
+            {
+                MyData item = new MyData();
+                item.Name = elemList[i].Attributes["filepath"].Value;
+
+                DataView.Items.Add(item);
+                index++;
+            }
         }
 
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
@@ -53,9 +52,9 @@ namespace downloader3
                 client.SpeedLimit = Properties.Settings.Default.speedLimit;
                 client.Start();
                 MyData item = new MyData();
-                item.Name = System.IO.Path.GetFileName(linksWindows.fileName);                
+                item.Name = System.IO.Path.GetFileName(linksWindows.fileName);
                 item.Progress = 0;
-                item.Client = client;                
+                item.Client = client;
 
                 DataView.Items.Add(item);
                 index++;
@@ -115,7 +114,6 @@ namespace downloader3
             if (bytes >= TB) return string.Format("{0:0.0} TB", (bytes / TB));
             else if (bytes >= GB) return string.Format("{0:0.0} GB", (bytes / GB));
             else if (bytes >= 1) return string.Format("{0:0.0} MB", (bytes / MB));
-
             else return "error";
         }
 
@@ -164,16 +162,17 @@ namespace downloader3
         {
             if (DataView.SelectedIndex == -1) return;
 
-            MyData item = DataView.SelectedItem as MyData;            
+            MyData item = DataView.SelectedItem as MyData;
 
             RenameWindow renameWindow = new RenameWindow();
-            renameWindow.FileName = item.Name;            
+            renameWindow.FileName = item.Name;
             if (renameWindow.ShowDialog() == true)
             {
                 item.Client.Rename(renameWindow.FileName);
                 item.Name = renameWindow.FileName;
             }
         }
+
         private void MenuItem_Click_3(object sender, RoutedEventArgs e) //Omezit rychlost
         {
             if (DataView.SelectedIndex == -1) return;
@@ -221,7 +220,7 @@ namespace downloader3
             if (Properties.Settings.Default.language == "cs-CZ") settingsWindow.langSelection.SelectedIndex = 0;
             if (Properties.Settings.Default.language == "en-US") settingsWindow.langSelection.SelectedIndex = 1;
             if (settingsWindow.ShowDialog() == true) //save settings
-            {  
+            {
                 Properties.Settings.Default.speedLimit = Int32.Parse(settingsWindow.speedLimit.Text);
                 Properties.Settings.Default.language = settingsWindow.language;
                 App.SelectCulture(Properties.Settings.Default.language);
@@ -264,20 +263,19 @@ namespace downloader3
                 DataView.Items.Insert(index - 1, item);
                 DataView.SelectedItems.Add(item);
             }
-
         }
 
         private void buttonDown_Click(object sender, RoutedEventArgs e)
-        {            
+        {
             int index = DataView.SelectedIndex;
 
             if (index < DataView.Items.Count - 1)
-            {                
-                object item = DataView.SelectedItem;                
+            {
+                object item = DataView.SelectedItem;
                 DataView.Items.RemoveAt(index);
                 DataView.Items.Insert(index + 1, item);
                 DataView.SelectedItems.Add(item);
-            }                
+            }
         }
 
         private void button_Click(object sender, RoutedEventArgs e)
@@ -285,7 +283,7 @@ namespace downloader3
             for (int i = 0; i < 3; i++)
             {
                 MyData item = new MyData();
-                item.Name = "item"+i.ToString();                
+                item.Name = "item" + i.ToString();
                 item.Progress = 69;
                 item.Client = client;
                 DataView.Items.Add(item);
@@ -294,17 +292,31 @@ namespace downloader3
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
+            xmlWriterSettings.Indent = true;
+            XmlWriter xmlWriter = XmlWriter.Create("test.xml", xmlWriterSettings);
+
+            xmlWriter.WriteStartDocument();
+            xmlWriter.WriteStartElement("links");
+
             foreach (MyData item in DataView.Items)
             {
-                
+                xmlWriter.WriteStartElement("link");
+                xmlWriter.WriteAttributeString("filepath", item.Client.FilePath);
+                xmlWriter.WriteAttributeString("url", item.Client.Url);
+                xmlWriter.WriteAttributeString("completed", XmlConvert.ToString(item.Client.Completed));
+                xmlWriter.WriteEndElement();
             }
+
+            xmlWriter.WriteEndDocument();
+            xmlWriter.Close();
         }
     }
 
     internal class MyData
     {
         public ImageSource Icon { get; set; }
-        public string Name { get; set; }        
+        public string Name { get; set; }
         public string Size { get; set; }
         public float Progress { get; set; }
         public string Speed { get; set; }

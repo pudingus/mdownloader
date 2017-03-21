@@ -7,15 +7,14 @@
         mc:Ignorable="d"
         Title="{DynamicResource lang_settings}" Height="251" Width="300" WindowStartupLocation="CenterOwner">
     <Grid>
-        <Label Content="{DynamicResource lang_language}" HorizontalAlignment="Left" Margin="10,11,0,0" VerticalAlignment="Top"/>
+        <Label Content="{DynamicResource lang_language}" HorizontalAlignment="Left" Margin="10,11,0,0" VerticalAlignment="Top" />
         <ComboBox x:Name="langSelection" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="209" SelectedIndex="0">
-            <ComboBoxItem Content="Čeština (CZ)"/>
-            <ComboBoxItem Content="English (EN)"/>
+            <ComboBoxItem Content="Čeština (CZ)" />
+            <ComboBoxItem Content="English (EN)" />
         </ComboBox>
-        <Button x:Name="buttonSave" Content="{DynamicResource lang_save}" Margin="0,0,10,10" Click="buttonSave_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="85"/>
-        <Label Content="{DynamicResource lang_speedlimit}" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="speedLimit" HorizontalAlignment="Left" Height="23" Margin="13,96,0,0" Text="200" VerticalAlignment="Top" Width="108" PreviewTextInput="NumberValidationTextBox"/>
-        <Label Content="kB/s" HorizontalAlignment="Left" Margin="126,93,0,0" VerticalAlignment="Top"/>
-
+        <Button x:Name="buttonSave" Content="{DynamicResource lang_save}" Margin="0,0,10,10" Click="buttonSave_Click" Height="26" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="85" />
+        <Label Content="{DynamicResource lang_speedlimit}" HorizontalAlignment="Left" Margin="10,70,0,0" VerticalAlignment="Top" />
+        <TextBox x:Name="speedLimit" HorizontalAlignment="Left" Height="23" Margin="13,96,0,0" Text="200" VerticalAlignment="Top" Width="108" PreviewTextInput="NumberValidationTextBox" />
+        <Label Content="kB/s" HorizontalAlignment="Left" Margin="126,93,0,0" VerticalAlignment="Top" />
     </Grid>
 </Window>

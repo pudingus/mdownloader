@@ -3,7 +3,6 @@
                     xmlns:local="clr-namespace:downloader3"
                     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
-    
     <system:String x:Key="lang_name">Name</system:String>
     <system:String x:Key="lang_size">Size</system:String>
     <system:String x:Key="lang_status">Status</system:String>
@@ -12,7 +11,7 @@
 
     <system:String x:Key="lang_pause">Pause</system:String>
     <system:String x:Key="lang_resume">Resume</system:String>
-    <system:String x:Key="lang_cancel">Cancel</system:String>    
+    <system:String x:Key="lang_cancel">Cancel</system:String>
     <system:String x:Key="lang_settings">Settings</system:String>
 
     <system:String x:Key="lang_addlinks">Add links</system:String>
@@ -23,7 +22,7 @@
 
     <system:String x:Key="lang_language">Language:</system:String>
     <system:String x:Key="lang_speedlimit">Speed limit:</system:String>
-    
+
     <system:String x:Key="lang_confirm_delete">Do you want to delete this file?</system:String>
     <system:String x:Key="lang_canceled">Canceled</system:String>
     <system:String x:Key="lang_paused">Paused</system:String>
