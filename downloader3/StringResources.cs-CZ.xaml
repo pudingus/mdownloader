@@ -20,8 +20,8 @@
     <system:String x:Key="lang_open">Otevřít</system:String>
     <system:String x:Key="lang_openinfolder">Otevřít ve složce</system:String>
 
-    <system:String x:Key="lang_language">Jazyk:</system:String>
-    <system:String x:Key="lang_speedlimit">Omezit rychlost:</system:String>
+    <system:String x:Key="lang_language">Jazyk</system:String>
+    <system:String x:Key="lang_speedlimit">Omezit rychlost</system:String>
 
     <system:String x:Key="lang_confirm_delete">Opravdu chcete smazat tento soubor?</system:String>
     <system:String x:Key="lang_canceled">Zrušeno</system:String>

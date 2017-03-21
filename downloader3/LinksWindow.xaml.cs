@@ -14,7 +14,7 @@ namespace downloader3
             InitializeComponent();
         }
 
-        public string fileName;
+        public string filePath;
         public string url;
 
         private void button_Click(object sender, RoutedEventArgs e)
@@ -24,7 +24,7 @@ namespace downloader3
             saveDialog.FileName = System.IO.Path.GetFileName(uri.LocalPath);
             if (saveDialog.ShowDialog() == true)
             {
-                fileName = saveDialog.FileName;
+                filePath = saveDialog.FileName;
                 url = comboBox.Text;
                 DialogResult = true;
                 Close();

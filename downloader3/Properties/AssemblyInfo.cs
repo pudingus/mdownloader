@@ -30,11 +30,11 @@ using System.Windows;
 
 [assembly: ThemeInfo(
     ResourceDictionaryLocation.None, //kde se nacházejí zdrojové slovníky pro konkrétní motiv
-                                     //(použité, pokud prostředek není nalezen na stránce,
-                                     // nebo ve zdrojových slovnících aplikace)
+    //(použité, pokud prostředek není nalezen na stránce,
+    // nebo ve zdrojových slovnících aplikace)
     ResourceDictionaryLocation.SourceAssembly //kde se nachází obecný zdrojový slovník
-                                              //(použité, pokud prostředek není nalezen na stránce,
-                                              // v aplikaci nebo libovolných zdrojových slovnících pro konkrétní motiv)
+    //(použité, pokud prostředek není nalezen na stránce,
+    // v aplikaci nebo libovolných zdrojových slovnících pro konkrétní motiv)
 )]
 
 // Informace o verzi sestavení se skládá z těchto čtyř hodnot:

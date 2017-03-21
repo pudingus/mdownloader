@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -17,25 +18,37 @@ namespace downloader3
         private double speed;
         private int index;
         private DownloadClient client;
+        private const string linksFile = "links.xml";
 
         public MainWindow()
         {
             InitializeComponent();
             index = 0;
 
-            App.SelectCulture(Properties.Settings.Default.language);
-
-            XmlDocument doc = new XmlDocument();
-            doc.Load("test.xml");
-
-            XmlNodeList elemList = doc.GetElementsByTagName("link");
-            for (int i = 0; i < elemList.Count; i++)
+            if (File.Exists(linksFile))
             {
-                MyData item = new MyData();
-                item.Name = elemList[i].Attributes["filepath"].Value;
+                XmlDocument doc = new XmlDocument();
+                doc.Load(linksFile);
 
-                DataView.Items.Add(item);
-                index++;
+                XmlNodeList elemList = doc.GetElementsByTagName("link");
+                for (int i = 0; i < elemList.Count; i++)
+                {
+                    MyData item = new MyData();
+                    item.FilePath = elemList[i].Attributes["filepath"].Value;
+                    item.Name = System.IO.Path.GetFileName(item.FilePath);
+                    item.Url = elemList[i].Attributes["url"].Value;
+                    item.Progress = XmlConvert.ToDouble(elemList[i].Attributes["progress"].Value);
+
+                    if (item.Progress >= 100) item.Completed = true;
+                    else
+                    {
+                        item.Completed = false;
+                        //item.Client = new DownloadClient(item.Url, item.FilePath); 
+                    }
+
+                    DataView.Items.Add(item);
+                    index++;
+                }
             }
         }
 
@@ -45,16 +58,18 @@ namespace downloader3
             linksWindows.Owner = this;
             if (linksWindows.ShowDialog() == true)
             {
-                client = new DownloadClient(linksWindows.url, linksWindows.fileName);
+                client = new DownloadClient(linksWindows.url, linksWindows.filePath);
                 client.OnDownloadProgressChanged += Client_OnDownloadProgressChanged;
                 client.OnDownloadProgressCompleted += Client_OnDownloadProgressCompleted;
                 client.Index = index;
                 client.SpeedLimit = Properties.Settings.Default.speedLimit;
                 client.Start();
                 MyData item = new MyData();
-                item.Name = System.IO.Path.GetFileName(linksWindows.fileName);
+                item.Name = System.IO.Path.GetFileName(linksWindows.filePath);
                 item.Progress = 0;
                 item.Client = client;
+                item.FilePath = linksWindows.filePath;
+                item.Url = linksWindows.url;
 
                 DataView.Items.Add(item);
                 index++;
@@ -66,14 +81,14 @@ namespace downloader3
             DownloadClient c = sender as DownloadClient;
 
             MyData item = DataView.Items[c.Index] as MyData;
-            item.Size = string.Format("{0} / {1}", ConvertFileSize(c.BytesDownloaded), ConvertFileSize(c.FileSize));
+            item.Size = string.Format("{0}/{1}", ConvertFileSize(c.BytesDownloaded), ConvertFileSize(c.FileSize));
             item.Progress = c.Percentage;
             speed = c.BytesPerSecond / 1024;
-            item.Speed = string.Format("{0} kB/s ({1})", speed.ToString("0.0"), item.Client.SpeedLimit);
+            item.Speed = string.Format("{0} ({1}) kB/s ", speed.ToString("0.0"), item.Client.SpeedLimit);
             item.Remaining = ConvertTime(c.SecondsRemaining);
 
             //zbytečně se obnovuje
-            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.Client.FilePath);
+            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.FilePath);
             var bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             sysicon.Dispose();
             item.Icon = bmpSrc;
@@ -82,7 +97,7 @@ namespace downloader3
             DataView.Items.Refresh();
         }
 
-        private void Client_OnDownloadProgressCompleted(object sender, bool cancel)
+        private void Client_OnDownloadProgressCompleted(object sender, bool cancel)   //TODO: vymyslet lepší jméno
         {
             Dispatcher.Invoke(delegate
             {
@@ -94,11 +109,13 @@ namespace downloader3
                     item.Progress = 0;
                     item.Speed = "";
                     item.Remaining = Translate("lang_canceled");
+                    item.Completed = false;
                 }
                 else
                 {
                     item.Progress = 100;
                     item.Remaining = Translate("lang_completed");
+                    item.Completed = true;
                 }
 
                 DataView.Items.Refresh();
@@ -141,7 +158,7 @@ namespace downloader3
             if (DataView.SelectedIndex == -1) return;
 
             MyData item = DataView.SelectedItem as MyData;
-            Process.Start(item.Client.FilePath);
+            Process.Start(item.FilePath);
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e)
@@ -153,7 +170,7 @@ namespace downloader3
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.FileName = "explorer.exe";
-            startInfo.Arguments = "/select, " + item.Client.FilePath;
+            startInfo.Arguments = "/select, " + item.FilePath;
             process.StartInfo = startInfo;
             process.Start();
         }
@@ -294,7 +311,7 @@ namespace downloader3
         {
             XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
             xmlWriterSettings.Indent = true;
-            XmlWriter xmlWriter = XmlWriter.Create("test.xml", xmlWriterSettings);
+            XmlWriter xmlWriter = XmlWriter.Create(linksFile, xmlWriterSettings);
 
             xmlWriter.WriteStartDocument();
             xmlWriter.WriteStartElement("links");
@@ -302,14 +319,32 @@ namespace downloader3
             foreach (MyData item in DataView.Items)
             {
                 xmlWriter.WriteStartElement("link");
-                xmlWriter.WriteAttributeString("filepath", item.Client.FilePath);
-                xmlWriter.WriteAttributeString("url", item.Client.Url);
-                xmlWriter.WriteAttributeString("completed", XmlConvert.ToString(item.Client.Completed));
+                xmlWriter.WriteAttributeString("filepath", item.FilePath);
+                xmlWriter.WriteAttributeString("url", item.Url);
+                xmlWriter.WriteAttributeString("progress", XmlConvert.ToString(item.Progress));
                 xmlWriter.WriteEndElement();
             }
 
             xmlWriter.WriteEndDocument();
             xmlWriter.Close();
+        }
+
+        private void DataView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) //sender ?
+        {
+            MyData item = DataView.SelectedItem as MyData;
+
+            if (item.Completed)
+            {
+                buttonPause.IsEnabled = false;
+                buttonResume.IsEnabled = false;
+                buttonCancel.IsEnabled = false;
+            }
+            else
+            {
+                buttonPause.IsEnabled = true;
+                buttonResume.IsEnabled = true;
+                buttonCancel.IsEnabled = true;
+            }
         }
     }
 
@@ -318,9 +353,12 @@ namespace downloader3
         public ImageSource Icon { get; set; }
         public string Name { get; set; }
         public string Size { get; set; }
-        public float Progress { get; set; }
+        public double Progress { get; set; }
         public string Speed { get; set; }
         public string Remaining { get; set; }
-        public DownloadClient Client;
+        public DownloadClient Client { get; set; }
+        public string FilePath { get; set; }
+        public string Url { get; set; }
+        public bool Completed { get; set; }
     }
 }

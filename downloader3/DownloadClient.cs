@@ -49,7 +49,7 @@ namespace downloader3
         public void Start()
         {
             timer.Tick += new EventHandler(Timer_Tick);
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 2000); //500 ms
+            timer.Interval = new TimeSpan(0, 0, 0, 0, 1000); //500 ms
             timer.Start();
 
             timer2.Tick += new EventHandler(Timer2_Tick);

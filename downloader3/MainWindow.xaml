@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Downloader" Height="479" Width="687" Closing="Window_Closing">
     <Grid>
-        <ListView x:Name="DataView" Margin="10,57,10,10">
+        <ListView x:Name="DataView" Margin="10,57,10,10" SelectionChanged="DataView_SelectionChanged">
             <ListView.Resources>
                 <ContextMenu x:Key="ItemContextMenu">
                     <MenuItem Header="{DynamicResource lang_open}" Background="WhiteSmoke" Click="MenuItem_Click" />
@@ -42,8 +42,8 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Width="90" Header="{DynamicResource lang_speed}" DisplayMemberBinding="{Binding Speed}" />
-                    <GridViewColumn Width="100" Header="{DynamicResource lang_time}" DisplayMemberBinding="{Binding Remaining}" />
+                    <GridViewColumn Width="120" Header="{DynamicResource lang_speed}" DisplayMemberBinding="{Binding Speed}" />
+                    <GridViewColumn Width="90" Header="{DynamicResource lang_time}" DisplayMemberBinding="{Binding Remaining}" />
                 </GridView>
             </ListView.View>
         </ListView>
