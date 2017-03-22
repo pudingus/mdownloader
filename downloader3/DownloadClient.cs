@@ -39,6 +39,8 @@ namespace downloader3
         private AutoResetEvent wh = new AutoResetEvent(true);
         private bool changeName;
         private string newPath;
+        private bool doAddBytes;
+        private long bytesAdded;
 
         public DownloadClient(string url, string filePath)
         {
@@ -95,6 +97,12 @@ namespace downloader3
             timer2.Start();
         }
 
+        public void AddBytes(long bytes)
+        {
+            bytesAdded = bytes;
+            doAddBytes = true;
+        }
+
         public void Rename(string newName)
         {
             changeName = true;
@@ -104,13 +112,24 @@ namespace downloader3
         private void DownloadWorker()
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
-            FileStream fs = new FileStream(FilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, 65535); //64kb buffer
+            FileStream fs;
+
+            if (doAddBytes)
+            {
+                request.AddRange(bytesAdded);
+                doAddBytes = false;
+                fs = new FileStream(FilePath, FileMode.Append, FileAccess.Write, FileShare.Write, 65535); //64kb buffer
+            }
+            else
+            {
+                fs = new FileStream(FilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, 65535); //64kb buffer
+            }
+            
+            
             using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
             {
                 Stream receiveStream = response.GetResponseStream();
-
                 FileSize = response.ContentLength;
-
                 byte[] read = new byte[chunkSize];
                 int count;
 

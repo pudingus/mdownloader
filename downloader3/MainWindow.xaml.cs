@@ -38,14 +38,33 @@ namespace downloader3
                     item.Name = System.IO.Path.GetFileName(item.FilePath);
                     item.Url = elemList[i].Attributes["url"].Value;
                     item.Progress = XmlConvert.ToDouble(elemList[i].Attributes["progress"].Value);
+                    item.Size = elemList[i].Attributes["size"].Value; //vyjímka
 
                     if (item.Progress >= 100) item.Completed = true;
                     else
                     {
-                        item.Completed = false;
-                        //item.Client = new DownloadClient(item.Url, item.FilePath); 
+                        if (File.Exists(item.FilePath))
+                        {
+                            item.Completed = false;
+                            item.Client = new DownloadClient(item.Url, item.FilePath);
+                            FileInfo f = new FileInfo(item.FilePath);
+                            long s1 = f.Length;
+
+                            item.Client.AddBytes(s1);
+                            item.Client.Start();
+
+                            MessageBox.Show("yolo");
+                        }                            
                     }
 
+                    if (File.Exists(item.FilePath))
+                    {
+                        var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.FilePath); 
+                        var bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                        sysicon.Dispose();
+                        item.Icon = bmpSrc;                        
+                    }                    
+                    
                     DataView.Items.Add(item);
                     index++;
                 }
@@ -76,6 +95,77 @@ namespace downloader3
             }
         }
 
+        private void buttonPause_Click(object sender, RoutedEventArgs e)
+        {
+            MyData item = DataView.SelectedItem as MyData;
+            item.Client.Pause();
+            item.Remaining = Translate("lang_paused");
+            item.Speed = "0 KB/s";
+            DataView.Items.Refresh();
+        }
+
+        private void buttonResume_Click(object sender, RoutedEventArgs e)
+        {
+            MyData item = DataView.SelectedItem as MyData;
+            item.Client.Resume();
+        }
+
+        private void buttonCancel_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataView.SelectedIndex == -1) return;
+            if (MessageBox.Show(Translate("lang_confirm_delete"), Translate("lang_cancel"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            {
+                MyData item = DataView.SelectedItem as MyData;
+                item.Client.Cancel();
+            }
+        }
+
+        private void buttonUp_Click(object sender, RoutedEventArgs e)
+        {
+            int index = DataView.SelectedIndex;
+
+            if (index > 0)
+            {
+                object item = DataView.SelectedItem;
+                DataView.Items.RemoveAt(index);
+                DataView.Items.Insert(index - 1, item);
+                DataView.SelectedItems.Add(item);
+            }
+        }
+
+        private void buttonDown_Click(object sender, RoutedEventArgs e)
+        {
+            int index = DataView.SelectedIndex;
+
+            if (index < DataView.Items.Count - 1)
+            {
+                object item = DataView.SelectedItem;
+                DataView.Items.RemoveAt(index);
+                DataView.Items.Insert(index + 1, item);
+                DataView.SelectedItems.Add(item);
+            }
+        }
+
+        private void buttonSettings_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow settingsWindow = new SettingsWindow();
+            settingsWindow.Owner = this;
+            settingsWindow.speedLimit.Text = Properties.Settings.Default.speedLimit.ToString();
+            settingsWindow.maxDownloads.Text = Properties.Settings.Default.maxDownloads.ToString();
+            if (Properties.Settings.Default.language == "cs-CZ") settingsWindow.langSelection.SelectedIndex = 0;
+            if (Properties.Settings.Default.language == "en-US") settingsWindow.langSelection.SelectedIndex = 1;
+            if (settingsWindow.ShowDialog() == true) //save settings
+            {
+                Properties.Settings.Default.speedLimit = Int32.Parse(settingsWindow.speedLimit.Text);
+                Properties.Settings.Default.language = settingsWindow.language;
+                Properties.Settings.Default.maxDownloads = Int32.Parse(settingsWindow.maxDownloads.Text);
+                App.SelectCulture(Properties.Settings.Default.language);
+                Properties.Settings.Default.Save();
+
+                RefreshLanguage();
+            }
+        }
+
         private void Client_OnDownloadProgressChanged(object sender)
         {
             DownloadClient c = sender as DownloadClient;
@@ -84,14 +174,14 @@ namespace downloader3
             item.Size = string.Format("{0}/{1}", ConvertFileSize(c.BytesDownloaded), ConvertFileSize(c.FileSize));
             item.Progress = c.Percentage;
             speed = c.BytesPerSecond / 1024;
-            item.Speed = string.Format("{0} ({1}) kB/s ", speed.ToString("0.0"), item.Client.SpeedLimit);
+            item.Speed = string.Format("{0} ({1}) KB/s ", speed.ToString("0.0"), item.Client.SpeedLimit);
             item.Remaining = ConvertTime(c.SecondsRemaining);
 
             //zbytečně se obnovuje
-            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.FilePath);
+            /*var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.FilePath);
             var bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             sysicon.Dispose();
-            item.Icon = bmpSrc;
+            item.Icon = bmpSrc;*/
             //
 
             DataView.Items.Refresh();
@@ -187,6 +277,7 @@ namespace downloader3
             {
                 item.Client.Rename(renameWindow.FileName);
                 item.Name = renameWindow.FileName;
+                item.FilePath = item.Client.FilePath;
             }
         }
 
@@ -197,54 +288,20 @@ namespace downloader3
             MyData item = DataView.SelectedItem as MyData;
 
             BandwidthWindow bandwidthWindow = new BandwidthWindow();
-            bandwidthWindow.SpeedLimit = item.Client.SpeedLimit;
+            bandwidthWindow.SpeedLimit = item.Client.SpeedLimit; //vyjímka
             if (bandwidthWindow.ShowDialog() == true)
             {
                 item.Client.SpeedLimit = bandwidthWindow.SpeedLimit;
             }
         }
 
-        private void buttonCancel_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Click_4(object sender, RoutedEventArgs e) //Info
         {
             if (DataView.SelectedIndex == -1) return;
-            if (MessageBox.Show(Translate("lang_confirm_delete"), Translate("lang_cancel"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
-            {
-                MyData item = DataView.SelectedItem as MyData;
-                item.Client.Cancel();
-            }
-        }
 
-        private void buttonPause_Click(object sender, RoutedEventArgs e)
-        {
             MyData item = DataView.SelectedItem as MyData;
-            item.Client.Pause();
-            item.Remaining = Translate("lang_paused");
-            item.Speed = "";
-            DataView.Items.Refresh();
-        }
 
-        private void buttonResume_Click(object sender, RoutedEventArgs e)
-        {
-            MyData item = DataView.SelectedItem as MyData;
-            item.Client.Resume();
-        }
-
-        private void buttonSettings_Click(object sender, RoutedEventArgs e)
-        {
-            SettingsWindow settingsWindow = new SettingsWindow();
-            settingsWindow.Owner = this;
-            settingsWindow.speedLimit.Text = Properties.Settings.Default.speedLimit.ToString();
-            if (Properties.Settings.Default.language == "cs-CZ") settingsWindow.langSelection.SelectedIndex = 0;
-            if (Properties.Settings.Default.language == "en-US") settingsWindow.langSelection.SelectedIndex = 1;
-            if (settingsWindow.ShowDialog() == true) //save settings
-            {
-                Properties.Settings.Default.speedLimit = Int32.Parse(settingsWindow.speedLimit.Text);
-                Properties.Settings.Default.language = settingsWindow.language;
-                App.SelectCulture(Properties.Settings.Default.language);
-                Properties.Settings.Default.Save();
-
-                RefreshLanguage();
-            }
+            MessageBox.Show(item.Name + "\r" + item.Completed.ToString() + "\r" + item.Url);
         }
 
         public void RefreshLanguage()
@@ -269,44 +326,6 @@ namespace downloader3
             return result;
         }
 
-        private void buttonUp_Click(object sender, RoutedEventArgs e)
-        {
-            int index = DataView.SelectedIndex;
-
-            if (index > 0)
-            {
-                object item = DataView.SelectedItem;
-                DataView.Items.RemoveAt(index);
-                DataView.Items.Insert(index - 1, item);
-                DataView.SelectedItems.Add(item);
-            }
-        }
-
-        private void buttonDown_Click(object sender, RoutedEventArgs e)
-        {
-            int index = DataView.SelectedIndex;
-
-            if (index < DataView.Items.Count - 1)
-            {
-                object item = DataView.SelectedItem;
-                DataView.Items.RemoveAt(index);
-                DataView.Items.Insert(index + 1, item);
-                DataView.SelectedItems.Add(item);
-            }
-        }
-
-        private void button_Click(object sender, RoutedEventArgs e)
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                MyData item = new MyData();
-                item.Name = "item" + i.ToString();
-                item.Progress = 69;
-                item.Client = client;
-                DataView.Items.Add(item);
-            }
-        }
-
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
@@ -322,6 +341,7 @@ namespace downloader3
                 xmlWriter.WriteAttributeString("filepath", item.FilePath);
                 xmlWriter.WriteAttributeString("url", item.Url);
                 xmlWriter.WriteAttributeString("progress", XmlConvert.ToString(item.Progress));
+                xmlWriter.WriteAttributeString("size", item.Size);
                 xmlWriter.WriteEndElement();
             }
 
@@ -360,5 +380,6 @@ namespace downloader3
         public string FilePath { get; set; }
         public string Url { get; set; }
         public bool Completed { get; set; }
+        public int Priority { get; set; }        
     }
 }

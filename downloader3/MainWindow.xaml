@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:downloader3"
         mc:Ignorable="d"
-        Title="Downloader" Height="479" Width="687" Closing="Window_Closing">
+        Title="Downloader" Height="479" Width="738" Closing="Window_Closing">
     <Grid>
         <ListView x:Name="DataView" Margin="10,57,10,10" SelectionChanged="DataView_SelectionChanged">
             <ListView.Resources>
@@ -14,6 +14,7 @@
                     <MenuItem Header="{DynamicResource lang_openinfolder}" Background="WhiteSmoke" Click="MenuItem_Click_1" />
                     <MenuItem Header="{DynamicResource lang_rename}" Background="WhiteSmoke" Click="MenuItem_Click_2" />
                     <MenuItem Header="{DynamicResource lang_speedlimit}" Background="WhiteSmoke" Click="MenuItem_Click_3" />
+                    <MenuItem Header="Info" Background="WhiteSmoke" Click="MenuItem_Click_4" />
                 </ContextMenu>
             </ListView.Resources>
             <ListView.ItemContainerStyle>
@@ -54,6 +55,5 @@
         <Button x:Name="buttonSettings" Content="{DynamicResource lang_settings}" Margin="0,10,10,0" HorizontalAlignment="Right" Width="80" Height="30" VerticalAlignment="Top" Click="buttonSettings_Click" />
         <Button x:Name="buttonUp" Content="↑" HorizontalAlignment="Left" Margin="361,10,0,0" VerticalAlignment="Top" Width="24" Height="30" Click="buttonUp_Click" />
         <Button x:Name="buttonDown" Content="↓" HorizontalAlignment="Left" Margin="390,10,0,0" VerticalAlignment="Top" Width="21" Height="30" Click="buttonDown_Click" />
-        <Button x:Name="button" Content="test" HorizontalAlignment="Left" Margin="45,10,0,0" VerticalAlignment="Top" Width="32" Click="button_Click" Height="30" />
     </Grid>
 </Window>

@@ -8,5 +8,8 @@
     <Setting Name="language" Type="System.String" Scope="User">
       <Value Profile="(Default)">cs-CZ</Value>
     </Setting>
+    <Setting Name="maxDownloads" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
