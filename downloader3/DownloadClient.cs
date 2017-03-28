@@ -13,9 +13,13 @@ namespace downloader3
 
         public event DownloadProgressChanged OnDownloadProgressChanged;
 
-        public delegate void DownloadProgressCompleted(object sender, bool cancel);
+        public delegate void DownloadFinished(object sender, bool canceled);
 
-        public event DownloadProgressCompleted OnDownloadProgressCompleted;
+        public event DownloadFinished OnDownloadFinished;
+
+        public delegate void DownloadFileInit(object sender);
+
+        public event DownloadFileInit OnDownloadFileInit;
 
         public long FileSize { get; private set; }
         public long BytesDownloaded { get; private set; }
@@ -34,10 +38,9 @@ namespace downloader3
         private long processed;
         private Thread downloadThread;
         private DispatcherTimer timer = new DispatcherTimer();
-        private DispatcherTimer timer2 = new DispatcherTimer();
         private Stopwatch sw = new Stopwatch();
         private AutoResetEvent wh = new AutoResetEvent(true);
-        private bool changeName;
+        private bool rename;
         private string newPath;
         private bool doAddBytes;
         private long bytesAdded;
@@ -51,12 +54,9 @@ namespace downloader3
         public void Start()
         {
             timer.Tick += new EventHandler(Timer_Tick);
-            timer.Interval = new TimeSpan(0, 0, 0, 0, 1000); //500 ms
+            timer.Interval = new TimeSpan(0, 0, 1); //1 sekunda
             timer.Start();
 
-            timer2.Tick += new EventHandler(Timer2_Tick);
-            timer2.Interval = new TimeSpan(0, 0, 1); //1 s
-            timer2.Start();
             sw.Start();
             downloadThread = new Thread(DownloadWorker);
             downloadThread.Start();
@@ -64,12 +64,9 @@ namespace downloader3
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            if (BytesDownloaded > 0) SecondsRemaining = (FileSize - BytesDownloaded) * sw.Elapsed.TotalSeconds / BytesDownloaded;
+            if (BytesDownloaded > 0) SecondsRemaining = (FileSize - BytesDownloaded) * sw.Elapsed.TotalSeconds / BytesDownloaded; //fix
             OnDownloadProgressChanged(this);
-        }
 
-        private void Timer2_Tick(object sender, EventArgs e)
-        {
             wh.Set();
             BytesPerSecond = processed;
             processed = 0;
@@ -86,7 +83,6 @@ namespace downloader3
             Paused = true;
             sw.Stop();
             timer.Stop();
-            timer2.Stop();
         }
 
         public void Resume()
@@ -94,7 +90,6 @@ namespace downloader3
             Paused = false;
             sw.Start();
             timer.Start();
-            timer2.Start();
         }
 
         public void AddBytes(long bytes)
@@ -105,7 +100,7 @@ namespace downloader3
 
         public void Rename(string newName)
         {
-            changeName = true;
+            rename = true;
             newPath = Path.GetDirectoryName(FilePath) + Path.DirectorySeparatorChar + newName;
         }
 
@@ -114,9 +109,13 @@ namespace downloader3
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
             FileStream fs;
 
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            FileSize = response.ContentLength;
+
             if (doAddBytes)
             {
                 request.AddRange(bytesAdded);
+                BytesDownloaded = bytesAdded;
                 doAddBytes = false;
                 fs = new FileStream(FilePath, FileMode.Append, FileAccess.Write, FileShare.Write, 65535); //64kb buffer
             }
@@ -124,43 +123,45 @@ namespace downloader3
             {
                 fs = new FileStream(FilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, 65535); //64kb buffer
             }
-            
-            
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+
+            OnDownloadFileInit(this);
+
+            response = (HttpWebResponse)request.GetResponse();
+            Stream receiveStream = response.GetResponseStream();
+            byte[] read = new byte[chunkSize];
+            int count;
+
+            while ((count = receiveStream.Read(read, 0, chunkSize)) > 0 && !Canceled) //dokud není přečten celý stream
             {
-                Stream receiveStream = response.GetResponseStream();
-                FileSize = response.ContentLength;
-                byte[] read = new byte[chunkSize];
-                int count;
-
-                while ((count = receiveStream.Read(read, 0, chunkSize)) > 0 && !Canceled) //dokud není přečten celý stream
+                if (rename)
                 {
-                    if (changeName)
-                    {
-                        fs.Close();
-                        File.Move(FilePath, newPath);
-                        FilePath = newPath;
-                        fs = new FileStream(FilePath, FileMode.Append);
-                        changeName = false;
-                    }
-
-                    fs.Write(read, 0, count);
-
-                    BytesDownloaded += count;
-                    processed += count;
-                    Percentage = ((float)BytesDownloaded / (float)FileSize) * 100;
-
-                    if (processed >= (SpeedLimit * 1024)) wh.WaitOne();
-
-                    while (Paused) Thread.Sleep(100);
+                    fs.Close();
+                    File.Move(FilePath, newPath);
+                    FilePath = newPath;
+                    fs = new FileStream(FilePath, FileMode.Append);
+                    rename = false;
                 }
-                fs.Close();
-                timer.Stop();
-                sw.Reset();
-                OnDownloadProgressCompleted(this, Canceled);
-                if (Canceled) File.Delete(FilePath);
-                else Completed = true;
+
+                fs.Write(read, 0, count);
+
+                BytesDownloaded += count;
+                processed += count;
+                Percentage = ((float)BytesDownloaded / (float)FileSize) * 100;
+
+                if (processed >= (SpeedLimit * 1024)) wh.WaitOne();
+
+                while (Paused) Thread.Sleep(100);
             }
+
+            response.Dispose();
+
+            fs.Close();
+            timer.Stop();
+            sw.Reset();
+            OnDownloadFinished(this, Canceled);
+            if (Canceled) File.Delete(FilePath);
+            else Completed = true;
+
         }
     }
 }

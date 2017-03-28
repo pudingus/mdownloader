@@ -46,25 +46,30 @@ namespace downloader3
                         if (File.Exists(item.FilePath))
                         {
                             item.Completed = false;
+
                             item.Client = new DownloadClient(item.Url, item.FilePath);
+
                             FileInfo f = new FileInfo(item.FilePath);
                             long s1 = f.Length;
-
                             item.Client.AddBytes(s1);
-                            item.Client.Start();
 
-                            MessageBox.Show("yolo");
-                        }                            
+                            item.Client.OnDownloadProgressChanged += Client_OnDownloadProgressChanged;
+                            item.Client.OnDownloadFinished += Client_OnDownloadFinished;
+                            item.Client.OnDownloadFileInit += Client_OnDownloadFileInit;
+                            item.Client.Index = index;
+                            item.Client.SpeedLimit = Properties.Settings.Default.speedLimit;
+                            item.Client.Start();
+                        }
                     }
 
                     if (File.Exists(item.FilePath))
                     {
-                        var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.FilePath); 
+                        var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.FilePath);
                         var bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                         sysicon.Dispose();
-                        item.Icon = bmpSrc;                        
-                    }                    
-                    
+                        item.Icon = bmpSrc;
+                    }
+
                     DataView.Items.Add(item);
                     index++;
                 }
@@ -79,7 +84,8 @@ namespace downloader3
             {
                 client = new DownloadClient(linksWindows.url, linksWindows.filePath);
                 client.OnDownloadProgressChanged += Client_OnDownloadProgressChanged;
-                client.OnDownloadProgressCompleted += Client_OnDownloadProgressCompleted;
+                client.OnDownloadFinished += Client_OnDownloadFinished;
+                client.OnDownloadFileInit += Client_OnDownloadFileInit;
                 client.Index = index;
                 client.SpeedLimit = Properties.Settings.Default.speedLimit;
                 client.Start();
@@ -177,23 +183,16 @@ namespace downloader3
             item.Speed = string.Format("{0} ({1}) KB/s ", speed.ToString("0.0"), item.Client.SpeedLimit);
             item.Remaining = ConvertTime(c.SecondsRemaining);
 
-            //zbytečně se obnovuje
-            /*var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.FilePath);
-            var bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            sysicon.Dispose();
-            item.Icon = bmpSrc;*/
-            //
-
             DataView.Items.Refresh();
         }
 
-        private void Client_OnDownloadProgressCompleted(object sender, bool cancel)   //TODO: vymyslet lepší jméno
+        private void Client_OnDownloadFinished(object sender, bool canceled)
         {
             Dispatcher.Invoke(delegate
             {
                 DownloadClient c = sender as DownloadClient;
                 MyData item = DataView.Items[c.Index] as MyData;
-                if (cancel)
+                if (canceled)
                 {
                     item.Size = "";
                     item.Progress = 0;
@@ -207,6 +206,23 @@ namespace downloader3
                     item.Remaining = Translate("lang_completed");
                     item.Completed = true;
                 }
+
+                DataView.Items.Refresh();
+            });
+        }
+
+        private void Client_OnDownloadFileInit(object sender)
+        {
+            Dispatcher.Invoke(delegate
+            {
+                DownloadClient c = sender as DownloadClient;
+
+                MyData item = DataView.Items[c.Index] as MyData;
+
+                var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.FilePath);
+                var bmpSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                sysicon.Dispose();
+                item.Icon = bmpSrc;
 
                 DataView.Items.Refresh();
             });
@@ -349,7 +365,7 @@ namespace downloader3
             xmlWriter.Close();
         }
 
-        private void DataView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) //sender ?
+        private void DataView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             MyData item = DataView.SelectedItem as MyData;
 
@@ -380,6 +396,6 @@ namespace downloader3
         public string FilePath { get; set; }
         public string Url { get; set; }
         public bool Completed { get; set; }
-        public int Priority { get; set; }        
+        public int Priority { get; set; }
     }
 }
