@@ -1,0 +1,101 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Color x:Key="IconsColor1">#FF0B3C6F</Color>
+  <Color x:Key="IconsColor2">#FFFFCD2A</Color>
+  <Color x:Key="IconsColor3">#FFDEAA00</Color>
+  <Color x:Key="IconsColor4">#FF8A1E1E</Color>
+  <Color x:Key="IconsColor5">#FF319FEC</Color>
+  <Color x:Key="IconsColor6">#FF298517</Color>
+  <Color x:Key="IconsColor7">#FF071F51</Color>
+  <Color x:Key="IconsColor8">#FF327120</Color>
+  <SolidColorBrush x:Key="IconsColorBrush1" Color="{DynamicResource IconsColor1}" />
+  <SolidColorBrush x:Key="IconsColorBrush2" Color="{DynamicResource IconsColor2}" />
+  <SolidColorBrush x:Key="IconsColorBrush3" Color="{DynamicResource IconsColor3}" />
+  <SolidColorBrush x:Key="IconsColorBrush4" Color="{DynamicResource IconsColor4}" />
+  <SolidColorBrush x:Key="IconsColorBrush5" Color="{DynamicResource IconsColor5}" />
+  <SolidColorBrush x:Key="IconsColorBrush6" Color="{DynamicResource IconsColor6}" />
+  <SolidColorBrush x:Key="IconsColorBrush7" Color="{DynamicResource IconsColor7}" />
+  <SolidColorBrush x:Key="IconsColorBrush8" Color="{DynamicResource IconsColor8}" />
+  <Geometry x:Key="appbar_control_playGeometry">F1 M76,76z M0,0z M30.0833,22.1667L50.6665,37.6043 50.6665,38.7918 30.0833,53.8333 30.0833,22.1667z</Geometry>
+  <SolidColorBrush x:Key="appbar_control_playBrushColor" Color="{Binding Color, Source={StaticResource IconsColorBrush1}}" />
+  <DrawingGroup x:Key="appbar_control_playDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_control_playBrushColor}" Geometry="{StaticResource appbar_control_playGeometry}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_control_playDrawingImage" Drawing="{StaticResource appbar_control_playDrawingGroup}" />
+  <Geometry x:Key="appbar_folder_open2Geometry1">F1 M16,16z M0,0z M20.024706,51.593986L29.024706,35.593986 59.741594,35.765186 49.962846,51.593986z</Geometry>
+  <Geometry x:Key="appbar_folder_open2Geometry2">F1 M16,16z M0,0z M19,28.0001L35,28C36,25,37.4999,24.0001,37.4999,24.0001L48.75,24C49.3023,24,50,24.6977,50,25.25L50,28 53.9999,28.0001 53.9999,32 27,32 19,46.4z</Geometry>
+  <SolidColorBrush x:Key="appbar_folder_open2BrushColor1" Color="{Binding Color, Source={StaticResource IconsColorBrush2}}" />
+  <SolidColorBrush x:Key="appbar_folder_open2BrushColor2" Color="{Binding Color, Source={StaticResource IconsColorBrush3}}" />
+  <DrawingGroup x:Key="appbar_folder_open2DrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+    <DrawingGroup Transform="0.34779357,0,0,0.36362127,-5.1869672,-5.4541311">
+      <GeometryDrawing Brush="{DynamicResource appbar_folder_open2BrushColor1}" Geometry="{StaticResource appbar_folder_open2Geometry1}" />
+      <GeometryDrawing Brush="{DynamicResource appbar_folder_open2BrushColor2}" Geometry="{StaticResource appbar_folder_open2Geometry2}" />
+    </DrawingGroup>
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_folder_open2DrawingImage" Drawing="{StaticResource appbar_folder_open2DrawingGroup}" />
+  <Geometry x:Key="appbar_chevron_downGeometry">F1 M76,76z M0,0z M37.8516,39.5833L52.1016,24.9375 52.1016,35.2292 37.8516,50.2708 23.6016,35.2292 23.6016,24.9375 37.8516,39.5833z</Geometry>
+  <SolidColorBrush x:Key="appbar_chevron_downBrushColor" Color="{Binding Color, Source={StaticResource IconsColorBrush1}}" />
+  <DrawingGroup x:Key="appbar_chevron_downDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_chevron_downBrushColor}" Geometry="{StaticResource appbar_chevron_downGeometry}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_chevron_downDrawingImage" Drawing="{StaticResource appbar_chevron_downDrawingGroup}" />
+  <Geometry x:Key="appbar_minusGeometry">F1 M76,76z M0,0z M22.25,35L53.75,35 53.75,41 22.25,41z</Geometry>
+  <SolidColorBrush x:Key="appbar_minusBrushColor" Color="{Binding Color, Source={StaticResource IconsColorBrush4}}" />
+  <DrawingGroup x:Key="appbar_minusDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_minusBrushColor}" Geometry="{StaticResource appbar_minusGeometry}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_minusDrawingImage" Drawing="{StaticResource appbar_minusDrawingGroup}" />
+  <Geometry x:Key="appbar_downloadGeometry">F1 M16,16z M0,0z M2.2457619,13.02997L13.754238,13.02997 13.754238,14.652542 2.2457619,14.652542z M6.672098,1.3474576L9.3279004,1.3474576 9.3279004,7.9999999 12.868971,4.9171142 12.868971,7.9999999 7.999999,12.056427 3.1310288,7.9999999 3.1310288,4.9171142 6.672098,7.9999999z</Geometry>
+  <SolidColorBrush x:Key="appbar_downloadBrushColor" Color="{Binding Color, Source={StaticResource IconsColorBrush5}}" />
+  <DrawingGroup x:Key="appbar_downloadDrawingGroup" ClipGeometry="M0,0 V16 H16 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_downloadBrushColor}" Geometry="{StaticResource appbar_downloadGeometry}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_downloadDrawingImage" Drawing="{StaticResource appbar_downloadDrawingGroup}" />
+  <Geometry x:Key="appbar_closeGeometry">F1 M76,76z M0,0z M26.9166,22.1667L37.9999,33.25 49.0832,22.1668 53.8332,26.9168 42.7499,38 53.8332,49.0834 49.0833,53.8334 37.9999,42.75 26.9166,53.8334 22.1666,49.0833 33.25,38 22.1667,26.9167 26.9166,22.1667z</Geometry>
+  <SolidColorBrush x:Key="appbar_closeBrushColor" Color="{Binding Color, Source={StaticResource IconsColorBrush4}}" />
+  <DrawingGroup x:Key="appbar_closeDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_closeBrushColor}" Geometry="{StaticResource appbar_closeGeometry}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_closeDrawingImage" Drawing="{StaticResource appbar_closeDrawingGroup}" />
+  <Geometry x:Key="appbar_page_addGeometry1">F1 M76,76z M0,0z M28,38L28,46 20,46 20,51 28,51 28,59 33,59 33,51 41,51 41,46 33,46 33,38z</Geometry>
+  <Geometry x:Key="appbar_page_addGeometry2">F1 M76,76z M0,0z M20,17L20,45 24,45 24,21 39,21 39,34 52,34 52,55 34,55 34,59 56,59 56,29.75 43.25,17z M43,22.25L50.75,30 43,30z M20,52L20,59 27,59 27,55 24,55 24,52z</Geometry>
+  <SolidColorBrush x:Key="appbar_page_addBrushColor1" Color="{Binding Color, Source={StaticResource IconsColorBrush6}}" />
+  <SolidColorBrush x:Key="appbar_page_addBrushColor2" Color="{Binding Color, Source={StaticResource IconsColorBrush7}}" />
+  <DrawingGroup x:Key="appbar_page_addDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_page_addBrushColor1}" Geometry="{StaticResource appbar_page_addGeometry1}" />
+    <GeometryDrawing Brush="{DynamicResource appbar_page_addBrushColor2}" Geometry="{StaticResource appbar_page_addGeometry2}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_page_addDrawingImage" Drawing="{StaticResource appbar_page_addDrawingGroup}" />
+  <Geometry x:Key="appbar_control_pauseGeometry">F1 M76,76z M0,0z M26.9167,23.75L33.25,23.75 33.25,52.25 26.9167,52.25 26.9167,23.75z M42.75,23.75L49.0833,23.75 49.0833,52.25 42.75,52.25 42.75,23.75z</Geometry>
+  <SolidColorBrush x:Key="appbar_control_pauseBrushColor" Color="{Binding Color, Source={StaticResource IconsColorBrush1}}" />
+  <DrawingGroup x:Key="appbar_control_pauseDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_control_pauseBrushColor}" Geometry="{StaticResource appbar_control_pauseGeometry}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_control_pauseDrawingImage" Drawing="{StaticResource appbar_control_pauseDrawingGroup}" />
+  <Geometry x:Key="appbar_settingsGeometry">F1 M76,76z M0,0z M38,23.5C38.8643,23.5,39.7109,23.5756,40.5337,23.7206L42.6275,18.5381 48.1901,20.787 46.0964,25.9692C47.6473,27.0149,48.9851,28.3527,50.0308,29.9036L55.213,27.8099 57.4619,33.3725 52.2794,35.4664C52.4244,36.2891 52.5,37.1357 52.5,38 52.5,38.8643 52.4244,39.7109 52.2794,40.5337L57.4619,42.6275 55.213,48.1901 50.0308,46.0964C49.0795,47.5073,47.8865,48.7418,46.5112,49.7405L48.7844,54.8462 43.3041,57.2891 41.0307,52.1828C40.0533,52.3906 39.0394,52.5 38,52.5 37.1357,52.5 36.2891,52.4244 35.4664,52.2794L33.3725,57.462 27.8099,55.213 29.9036,50.0309C28.3527,48.9851,27.0149,47.6473,25.9691,46.0964L20.787,48.1901 18.538,42.6275 23.7206,40.5336C23.5756,39.7109 23.5,38.8643 23.5,38 23.5,37.1357 23.5756,36.2891 23.7206,35.4664L18.538,33.3725 20.787,27.8099 25.9691,29.9036C26.9205,28.4927,28.1135,27.2582,29.4889,26.2594L27.2157,21.1537 32.6959,18.7109 34.9694,23.8172C35.9468,23.6094,36.9606,23.5,38,23.5z M38,28C32.4771,28 28,32.4772 28,38 28,43.5229 32.4771,48 38,48 43.5228,48 48,43.5229 48,38 48,32.4772 43.5228,28 38,28z</Geometry>
+  <SolidColorBrush x:Key="appbar_settingsBrushColor" Color="{Binding Color, Source={StaticResource IconsColorBrush1}}" />
+  <DrawingGroup x:Key="appbar_settingsDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_settingsBrushColor}" Geometry="{StaticResource appbar_settingsGeometry}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_settingsDrawingImage" Drawing="{StaticResource appbar_settingsDrawingGroup}" />
+  <Geometry x:Key="appbar_addGeometry">F1 M76,76z M0,0z M18.967455,34.641356L34.641707,34.641257 34.641877,18.967076 41.359434,18.967034 41.359264,34.641215 57.033587,34.641187 57.033615,41.358673 41.359222,41.358772 41.359194,57.033095 34.641566,57.033066 34.641736,41.358744 18.967484,41.358843z</Geometry>
+  <SolidColorBrush x:Key="appbar_addBrushColor" Color="{Binding Color, Source={StaticResource IconsColorBrush8}}" />
+  <DrawingGroup x:Key="appbar_addDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_addBrushColor}" Geometry="{StaticResource appbar_addGeometry}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_addDrawingImage" Drawing="{StaticResource appbar_addDrawingGroup}" />
+  <Geometry x:Key="appbar_chevron_upGeometry">F1 M76,76z M0,0z M37.8516,35.625L34.6849,38.7917 23.6016,50.2708 23.6016,39.9792 37.8516,24.9375 52.1016,39.9792 52.1016,50.2708 41.0182,38.7917 37.8516,35.625z</Geometry>
+  <SolidColorBrush x:Key="appbar_chevron_upBrushColor" Color="{Binding Color, Source={StaticResource IconsColorBrush1}}" />
+  <DrawingGroup x:Key="appbar_chevron_upDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_chevron_upBrushColor}" Geometry="{StaticResource appbar_chevron_upGeometry}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_chevron_upDrawingImage" Drawing="{StaticResource appbar_chevron_upDrawingGroup}" />
+  <Geometry x:Key="appbar_folder_openGeometry1">F1 M76,76z M0,0z M20.024706,51.593986L29.024706,35.593986 64.024706,35.593986 55.024706,51.593986z</Geometry>
+  <Geometry x:Key="appbar_folder_openGeometry2">F1 M76,76z M0,0z M19,28.0001L35,28C36,25,37.4999,24.0001,37.4999,24.0001L48.75,24C49.3023,24,50,24.6977,50,25.25L50,28 53.9999,28.0001 53.9999,32 27,32 19,46.4z</Geometry>
+  <SolidColorBrush x:Key="appbar_folder_openBrushColor1" Color="{Binding Color, Source={StaticResource IconsColorBrush2}}" />
+  <SolidColorBrush x:Key="appbar_folder_openBrushColor2" Color="{Binding Color, Source={StaticResource IconsColorBrush3}}" />
+  <DrawingGroup x:Key="appbar_folder_openDrawingGroup" ClipGeometry="M0,0 V76 H76 V0 H0 Z">
+    <GeometryDrawing Brush="{DynamicResource appbar_folder_openBrushColor1}" Geometry="{StaticResource appbar_folder_openGeometry1}" />
+    <GeometryDrawing Brush="{DynamicResource appbar_folder_openBrushColor2}" Geometry="{StaticResource appbar_folder_openGeometry2}" />
+  </DrawingGroup>
+  <DrawingImage x:Key="appbar_folder_openDrawingImage" Drawing="{StaticResource appbar_folder_openDrawingGroup}" />
+</ResourceDictionary>

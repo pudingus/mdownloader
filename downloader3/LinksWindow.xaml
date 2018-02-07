@@ -9,9 +9,8 @@
     <Grid>
         <Button x:Name="button" Content="{DynamicResource lang_save}" Margin="0,0,10,10" Click="button_Click" HorizontalAlignment="Right" Width="75" Height="24" VerticalAlignment="Bottom" />
         <ComboBox x:Name="comboBox" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="364" IsEditable="True" SelectedIndex="0">
-            <ComboBoxItem Content="http://localhost/site-a-princip.mpeg"/>
-            <ComboBoxItem Content="http://localhost/dafuq.png" />
-            <ComboBoxItem Content="http://datox.g6.cz/dl/afkforcwz.rar" />
+            <ComboBoxItem Content="http://localhost/flip-merta_vol1.mkv"/>
+            <ComboBoxItem Content="http://localhost/vs_Community.exe" />
         </ComboBox>
     </Grid>
 </Window>

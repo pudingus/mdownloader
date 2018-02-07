@@ -12,6 +12,7 @@
     <system:String x:Key="lang_pause">Pozastavit</system:String>
     <system:String x:Key="lang_resume">Obnovit</system:String>
     <system:String x:Key="lang_cancel">Zrušit</system:String>
+    <system:String x:Key="lang_remove">Odebrat</system:String>
     <system:String x:Key="lang_settings">Nastavení</system:String>
 
     <system:String x:Key="lang_addlinks">Přidat odkazy</system:String>
@@ -22,10 +23,15 @@
 
     <system:String x:Key="lang_language">Jazyk</system:String>
     <system:String x:Key="lang_speedlimit">Omezit rychlost</system:String>
+    <system:String x:Key="lang_speedlimit_default">Vychozí limit rychlosti pro nové soubory</system:String>
 
-    <system:String x:Key="lang_confirm_delete">Opravdu chcete smazat tento soubor?</system:String>
+    <system:String x:Key="lang_confirm_remove">Opravdu chcete odebrat tento soubor ze seznamu?</system:String>
+    <system:String x:Key="lang_confirm_remove2">Původní soubor zůstane na disku</system:String>
     <system:String x:Key="lang_canceled">Zrušeno</system:String>
     <system:String x:Key="lang_paused">Pozastaveno</system:String>
     <system:String x:Key="lang_completed">Dokončeno</system:String>
     <system:String x:Key="lang_rename">Přejmenovat</system:String>
+
+    <system:String x:Key="lang_unknown">neznámo</system:String>
+    <system:String x:Key="lang_inqueue">Ve frontě</system:String>
 </ResourceDictionary>

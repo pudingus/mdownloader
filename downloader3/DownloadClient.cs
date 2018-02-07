@@ -3,101 +3,89 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Threading;
+using System.ComponentModel;
 
 namespace downloader3
 {
-    internal class DownloadClient
+    public class DownloadClient
     {
-        public delegate void DownloadProgressChanged(object sender);
+        public delegate void DownloadCompleted(DownloadClient client, MyData item);
+        public event DownloadCompleted OnDownloadCompleted;
 
-        public event DownloadProgressChanged OnDownloadProgressChanged;
+        public long TotalBytes          { get; private set; }
+        public long BytesDownloaded     { get; private set; }
+        public long BytesPerSecond      { get; private set; }
+        public double SecondsRemaining  { get; private set; }
+        public double Elapsed           { get { return elapsed; }}
+        public string FilePath          { get; private set; }
+        public string Url               { get; private set; }
+        public int SpeedLimit           { get; set; } //v kilobajtech        
+        public DCStates State           { get; private set; }
+        public MyData Item              { get; set; }
+        public bool Append              { get; private set; }
 
-        public delegate void DownloadFinished(object sender, bool canceled);
-
-        public event DownloadFinished OnDownloadFinished;
-
-        public delegate void DownloadFileInit(object sender);
-
-        public event DownloadFileInit OnDownloadFileInit;
-
-        public long FileSize { get; private set; }
-        public long BytesDownloaded { get; private set; }
-        public int Index { get; set; }
-        public float Percentage { get; private set; }
-        public long BytesPerSecond { get; private set; }
-        public double SecondsRemaining { get; private set; }
-        public int SpeedLimit { get; set; } //v kilobajtech
-        public bool Paused { get; private set; }
-        public bool Canceled { get; private set; }
-        public bool Completed { get; private set; }
-        public string FilePath { get; private set; }
-        public string Url { get; private set; }
-
-        private const int chunkSize = 1024;
-        private long processed;
-        private Thread downloadThread;
-        private DispatcherTimer timer = new DispatcherTimer();
-        private Stopwatch sw = new Stopwatch();
-        private AutoResetEvent wh = new AutoResetEvent(true);
+        private double elapsed          = 0;
+        private const int chunkSize     = 1024;        
+        private Thread downloadThread;             
         private bool rename;
         private string newPath;
-        private bool doAddBytes;
-        private long bytesAdded;
+        private int processed           = 0;
+        private DispatcherTimer timer   = new DispatcherTimer();
+        private Stopwatch sw            = new Stopwatch();
+        private FileStream fs;
+        private AsyncOperation operation;
 
-        public DownloadClient(string url, string filePath)
-        {
+        public DownloadClient(string url, string filePath, bool append, MyData item, long totalBytes)
+        {            
             Url = url;
             FilePath = filePath;
+            Item = item;
+            Append = append;
+            TotalBytes = totalBytes;
+
+            timer.Tick += Timer_Tick;
+            timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            downloadThread = new Thread(DownloadWorker);
+
+            if (append && File.Exists(filePath))
+            {
+                FileInfo file = new FileInfo(filePath);
+                BytesDownloaded = file.Length;
+            }
+
+            if (totalBytes == BytesDownloaded) State = DCStates.Completed;
+            else State = DCStates.Paused;
+
+            operation = AsyncOperationManager.CreateOperation(null);            
+        }
+
+        public void Queue()
+        {
+            State = DCStates.Queue;
         }
 
         public void Start()
         {
-            timer.Tick += new EventHandler(Timer_Tick);
-            timer.Interval = new TimeSpan(0, 0, 1); //1 sekunda
+            State = DCStates.Downloading;
             timer.Start();
-
             sw.Start();
-            downloadThread = new Thread(DownloadWorker);
-            downloadThread.Start();
-        }
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            if (BytesDownloaded > 0) SecondsRemaining = (FileSize - BytesDownloaded) * sw.Elapsed.TotalSeconds / BytesDownloaded; //fix
-            OnDownloadProgressChanged(this);
-
-            wh.Set();
-            BytesPerSecond = processed;
-            processed = 0;
-        }
+            if (!downloadThread.IsAlive) downloadThread.Start();
+        }   
 
         public void Cancel()
         {
-            Canceled = true;
-            Paused = false;
+            State = DCStates.Canceled;
         }
 
         public void Pause()
         {
-            Paused = true;
-            sw.Stop();
+            State = DCStates.Paused;
             timer.Stop();
-        }
-
-        public void Resume()
-        {
-            Paused = false;
-            sw.Start();
-            timer.Start();
-        }
-
-        public void AddBytes(long bytes)
-        {
-            bytesAdded = bytes;
-            doAddBytes = true;
-        }
-
+            sw.Stop();
+        }        
+        
         public void Rename(string newName)
         {
             rename = true;
@@ -106,62 +94,80 @@ namespace downloader3
 
         private void DownloadWorker()
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
-            FileStream fs;
-
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            FileSize = response.ContentLength;
-
-            if (doAddBytes)
+            try
             {
-                request.AddRange(bytesAdded);
-                BytesDownloaded = bytesAdded;
-                doAddBytes = false;
-                fs = new FileStream(FilePath, FileMode.Append, FileAccess.Write, FileShare.Write, 65535); //64kb buffer
-            }
-            else
-            {
-                fs = new FileStream(FilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, 65535); //64kb buffer
-            }
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
+                request.Proxy = null;
 
-            OnDownloadFileInit(this);
-
-            response = (HttpWebResponse)request.GetResponse();
-            Stream receiveStream = response.GetResponseStream();
-            byte[] read = new byte[chunkSize];
-            int count;
-
-            while ((count = receiveStream.Read(read, 0, chunkSize)) > 0 && !Canceled) //dokud není přečten celý stream
-            {
-                if (rename)
+                if (Append && File.Exists(FilePath))
                 {
-                    fs.Close();
-                    File.Move(FilePath, newPath);
-                    FilePath = newPath;
-                    fs = new FileStream(FilePath, FileMode.Append);
-                    rename = false;
+                    FileInfo file = new FileInfo(FilePath);
+                    BytesDownloaded = file.Length;
                 }
+                if (BytesDownloaded > 0)
+                {
+                    request.AddRange(BytesDownloaded);
+                    fs = new FileStream(FilePath, FileMode.Append, FileAccess.Write, FileShare.Write, 65535); //64kb buffer    
+                }
+                else fs = new FileStream(FilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite, 65535); //64kb buffer   
+                
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                Stream receiveStream = response.GetResponseStream();
+                TotalBytes = BytesDownloaded + response.ContentLength;
+                byte[] read = new byte[chunkSize];
+                int count;                
 
-                fs.Write(read, 0, count);
+                while ((count = receiveStream.Read(read, 0, chunkSize)) > 0 && State != DCStates.Canceled) //dokud není přečten celý stream
+                {
+                    while (State == DCStates.Paused) Thread.Sleep(100);
+                    if (rename)
+                    {
+                        fs.Close();
+                        File.Move(FilePath, newPath);
+                        FilePath = newPath;
+                        fs = new FileStream(FilePath, FileMode.Append);
+                        rename = false;
+                    }
 
-                BytesDownloaded += count;
-                processed += count;
-                Percentage = ((float)BytesDownloaded / (float)FileSize) * 100;
+                    fs.Write(read, 0, count);                    
+                    BytesDownloaded += count;
+                    processed += count;
+                    
+                    if ((SpeedLimit > 0) && (processed >= (SpeedLimit * 1024))) Thread.Sleep(1000);                    
+                    elapsed = sw.Elapsed.TotalSeconds;
+                }                
 
-                if (processed >= (SpeedLimit * 1024)) wh.WaitOne();
+                response.Close();
+                fs.Close();
+                timer.Stop();
+                sw.Reset();
+                BytesPerSecond = 0; 
+                if (State == DCStates.Canceled) File.Delete(FilePath);                
+                else
+                {
+                    operation.Post(new SendOrPostCallback(delegate (object state)
+                    {
+                        OnDownloadCompleted?.Invoke(this, Item);
+                    }), null);
+                    operation.OperationCompleted();
 
-                while (Paused) Thread.Sleep(100);
+                    State = DCStates.Completed;
+                }
             }
+            catch (WebException)
+            {                
+                State = DCStates.Error;
+                timer.Stop();
+                sw.Reset();
+            }
+        }
 
-            response.Dispose();
-
-            fs.Close();
-            timer.Stop();
-            sw.Reset();
-            OnDownloadFinished(this, Canceled);
-            if (Canceled) File.Delete(FilePath);
-            else Completed = true;
-
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            BytesPerSecond = processed;
+            processed = 0;
         }
     }
+
+    public enum DCStates { Paused, Queue, Downloading, Canceled, Completed, Error }
 }
