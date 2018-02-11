@@ -51,40 +51,51 @@ namespace downloader3
             links = links.Load();
 
             foreach (Link link in links.List)
-            {                
+            {
+                string path = Path.Combine(link.Directory, link.FileName);
                 MyData item = new MyData();
-                FileInfo file = new FileInfo(link.FilePath);
-                        
-                item.Name = Path.GetFileName(link.FilePath);
-                item.Client = new DownloadClient(link.Url, link.FilePath, true, item, link.TotalBytes);
+                FileInfo file = new FileInfo(path);
+
+                item.Name = link.FileName;
+                item.Client = new DownloadClient(link.Url, link.Directory, item, link.TotalBytes, link.FileName);
+                item.Client.OnDownloadInit += Client_OnDownloadInit;
                 item.Client.OnDownloadCompleted += Client_OnDownloadCompleted;
                 item.Client.SpeedLimit = link.SpeedLimit;                
 
                 Refresh(item);
                                 
                 //jestli soubor na seznamu existuje, použít tu ikonu, jinak vytvořit dočasný soubor
-                if (File.Exists(link.FilePath))
+                if (File.Exists(path))
                 { 
-                    var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.Client.FilePath);
+                    var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(path);
                     var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                     sysicon.Dispose();
                     item.Icon = bmpSrc;
                 }
                 else
                 {
-                    string path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + Path.GetExtension(link.FilePath));
-                    FileStream fs = File.Create(path);
+                    string tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + Path.GetExtension(link.FileName));
+                    FileStream fs = File.Create(tempPath);
 
-                    var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(path);
+                    var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(tempPath);
                     var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
                     sysicon.Dispose();
                     item.Icon = bmpSrc;
 
                     fs.Close();
-                    File.Delete(path);
+                    File.Delete(tempPath);
                 }
                 DataView.Items.Add(item);
             }
+        }
+
+        private void Client_OnDownloadInit(DownloadClient client, MyData item)
+        {
+            string path = Path.Combine(client.Directory, client.FileName);
+            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(path);
+            var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            sysicon.Dispose();
+            item.Icon = bmpSrc;
         }
 
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
@@ -93,33 +104,29 @@ namespace downloader3
             linksWindows.Owner = this;
             if (linksWindows.ShowDialog() == true)
             {   
-                MyData item = new MyData();
-                item.Name = Path.GetFileName(linksWindows.filePath);
-                item.Client = new DownloadClient(linksWindows.url, linksWindows.filePath, false, item, 0);
-                item.Client.OnDownloadCompleted += Client_OnDownloadCompleted;
-                item.Client.SpeedLimit = Settings.SpeedLimit;
-                //DataView.
+                for (int i = 0; i < linksWindows.linksTextBox.LineCount; i++)
+                {
+                    string url = linksWindows.linksTextBox.GetLineText(i);
 
-                int downloadingCount = 0;
-                foreach (MyData it in DataView.Items)
-                    if (it.Client.State == DCStates.Downloading) downloadingCount++;
-                
-                if (downloadingCount < Settings.MaxDownloads) item.Client.Start(); 
-                else item.Client.Queue();
+                    string dir = linksWindows.pathTextBox.Text;
+                    
+                    MyData item = new MyData();                    
+                    item.Client = new DownloadClient(url, dir, item);
+                    item.Name = item.Client.FileName;
+                    item.Client.OnDownloadInit += Client_OnDownloadInit;
+                    item.Client.OnDownloadCompleted += Client_OnDownloadCompleted;
+                    item.Client.SpeedLimit = Settings.SpeedLimit;
 
-                string path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + Path.GetExtension(item.Client.FilePath));
-                FileStream fs = File.Create(path);
+                    int downloadingCount = 0;
+                    foreach (MyData it in DataView.Items)
+                        if (it.Client.State == DCStates.Downloading) downloadingCount++;
 
-                var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(path);
-                var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                sysicon.Dispose();                
-                item.Icon = bmpSrc;
+                    if (downloadingCount < Settings.MaxDownloads) item.Client.Start();
+                    else item.Client.Queue();                    
 
-                Refresh(item);
-                DataView.Items.Add(item);
-
-                fs.Close();
-                File.Delete(path);
+                    Refresh(item);
+                    DataView.Items.Add(item);                    
+                }                
             }
         }
 
@@ -228,6 +235,7 @@ namespace downloader3
         
         public void Refresh(MyData item)
         {
+            item.Name = item.Client.FileName;
             item.Progress = (double)item.Client.BytesDownloaded / item.Client.TotalBytes * 100;
             item.Size = string.Format("{0}/{1}", ConvertFileSize(item.Client.BytesDownloaded), ConvertFileSize(item.Client.TotalBytes));
             double speed = item.Client.BytesPerSecond / 1024;
@@ -247,7 +255,8 @@ namespace downloader3
 
         private void Client_OnDownloadCompleted(DownloadClient client, MyData item)
         {
-            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(item.Client.FilePath);
+            string path = Path.Combine(item.Client.Directory, item.Client.FileName);
+            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(path);
             var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             sysicon.Dispose();
             item.Icon = bmpSrc;
@@ -315,7 +324,8 @@ namespace downloader3
         {
             if (DataView.SelectedIndex == -1) return;
             MyData item = DataView.SelectedItem as MyData;
-            if (File.Exists(item.Client.FilePath)) Process.Start(item.Client.FilePath);            
+            string path = Path.Combine(item.Client.Directory, item.Client.FileName);
+            if (File.Exists(path)) Process.Start(path);            
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e) //Otevřít ve složce
@@ -326,8 +336,9 @@ namespace downloader3
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.FileName = "explorer.exe";
-            if (File.Exists(item.Client.FilePath)) startInfo.Arguments = "/select, " + item.Client.FilePath;
-            else startInfo.Arguments = Path.GetDirectoryName(item.Client.FilePath);
+            string path = Path.Combine(item.Client.Directory, item.Client.FileName);
+            if (File.Exists(path)) startInfo.Arguments = "/select, " + path;
+            else startInfo.Arguments = item.Client.Directory;
             process.StartInfo = startInfo;
             process.Start();
         }
@@ -345,6 +356,7 @@ namespace downloader3
             {
                 item.Client.Rename(renameWindow.FileName);
                 item.Name = renameWindow.FileName;
+                DataView.Items.Refresh();
             }
         }
 
@@ -392,7 +404,8 @@ namespace downloader3
             foreach (MyData item in DataView.Items)
             {
                 Link link = new Link();
-                link.FilePath = item.Client.FilePath;
+                link.Directory = item.Client.Directory;
+                link.FileName = item.Client.FileName;
                 link.Url = item.Client.Url;
                 link.TotalBytes = item.Client.TotalBytes;
                 link.SpeedLimit = item.Client.SpeedLimit;

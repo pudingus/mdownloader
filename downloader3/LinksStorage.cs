@@ -12,10 +12,12 @@ namespace downloader3
     [Serializable]
     public class Link
     {        
-        public string FilePath { get; set; }
+        public string FileName { get; set; }
+        public string Directory { get; set; }
         public string Url { get; set; }
         public long TotalBytes { get; set; }
         public int SpeedLimit { get; set; }
+        public bool Completed { get; set; }
     }
 
     [Serializable]

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:downloader3"
         mc:Ignorable="d"
-        Title="RenameWindow" Height="110.902" Width="409.783" WindowStartupLocation="CenterOwner">
+        Title="RenameWindow" Height="110.902" Width="409.783" WindowStartupLocation="CenterOwner" Loaded="Window_Loaded">
     <Grid>
         <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="22" Margin="8,10,0,0" Text="TextBox" VerticalAlignment="Top" Width="366" />
         <Button x:Name="buttonRename" Content="Přejmenovat" HorizontalAlignment="Left" Height="24" Margin="210,38,0,0" VerticalAlignment="Top" Width="88" Click="buttonRename_Click" />

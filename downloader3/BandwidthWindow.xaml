@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:downloader3"
         mc:Ignorable="d"
-        Title="BandwidthWindow" Height="110.902" Width="376.473" WindowStartupLocation="CenterOwner">
+        Title="BandwidthWindow" Height="76.902" Width="382.473" WindowStartupLocation="CenterOwner">
     <Grid>
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="22" Margin="16,13,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="303" PreviewTextInput="NumberValidationTextBox" />
-        <Label Content="KB/s" HorizontalAlignment="Left" Margin="324,11,0,0" VerticalAlignment="Top" />
-        <Button x:Name="buttonLimit" Content="Omezit" HorizontalAlignment="Left" Margin="205,40,0,0" VerticalAlignment="Top" Width="75" Click="buttonLimit_Click" />
-        <Button x:Name="buttonCancel" Content="Zrušit" HorizontalAlignment="Left" Height="22" Margin="285,40,0,0" VerticalAlignment="Top" Width="73" Click="buttonCancel_Click" />
+        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="22" Margin="16,13,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="148" PreviewTextInput="NumberValidationTextBox" />
+        <Label Content="KB/s" HorizontalAlignment="Left" Margin="169,11,0,0" VerticalAlignment="Top" />
+        <Button x:Name="buttonLimit" Content="Omezit" HorizontalAlignment="Left" Margin="208,13,0,0" VerticalAlignment="Top" Width="75" Click="buttonLimit_Click" />
+        <Button x:Name="buttonCancel" Content="Zrušit" HorizontalAlignment="Left" Height="22" Margin="288,13,0,0" VerticalAlignment="Top" Width="73" Click="buttonCancel_Click" />
     </Grid>
 </Window>
