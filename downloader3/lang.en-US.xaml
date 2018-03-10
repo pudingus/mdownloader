@@ -10,8 +10,7 @@
     <system:String x:Key="lang_time">Remaining time</system:String>
 
     <system:String x:Key="lang_pause">Pause</system:String>
-    <system:String x:Key="lang_resume">Resume</system:String>
-    <system:String x:Key="lang_cancel">Cancel</system:String>
+    <system:String x:Key="lang_resume">Resume</system:String>    
     <system:String x:Key="lang_remove">Remove</system:String>
     <system:String x:Key="lang_settings">Settings</system:String>
 
@@ -20,6 +19,7 @@
 
     <system:String x:Key="lang_open">Open</system:String>
     <system:String x:Key="lang_openinfolder">Open in folder</system:String>
+    <system:String x:Key="lang_rename">Rename</system:String>
 
     <system:String x:Key="lang_language">Language</system:String>
     <system:String x:Key="lang_speedlimit">Speed limit</system:String>
@@ -30,9 +30,15 @@
     <system:String x:Key="lang_canceled">Canceled</system:String>
     <system:String x:Key="lang_paused">Paused</system:String>
     <system:String x:Key="lang_completed">Completed</system:String>
-    <system:String x:Key="lang_rename">Rename</system:String>
 
     <system:String x:Key="lang_unknown">unknown</system:String>
     <system:String x:Key="lang_inqueue">In queue</system:String>
-    
+    <system:String x:Key="lang_error">Error</system:String>
+
+    <system:String x:Key="lang_ok">OK</system:String>
+    <system:String x:Key="lang_cancel">Cancel</system:String>
+
+    <system:String x:Key="lang_moveup">Move up</system:String>
+    <system:String x:Key="lang_movedown">Move down</system:String>
+
 </ResourceDictionary>

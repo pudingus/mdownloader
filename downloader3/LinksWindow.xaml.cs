@@ -5,6 +5,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Collections.Specialized;
+using System.IO;
 
 namespace downloader3
 {
@@ -18,56 +19,17 @@ namespace downloader3
             InitializeComponent();
         }
 
-        //public string filePath;
-        //public string url;
-
-        private void button_Click(object sender, RoutedEventArgs e)
-        {
-            /*SaveFileDialog saveDialog = new SaveFileDialog();
-            try
-            {
-                //Uri uri = new Uri(comboBox.Text);
-
-                //saveDialog.FileName = System.IO.Path.GetFileName(uri.LocalPath);
-                if (saveDialog.ShowDialog() == true)
-                {
-                    filePath = saveDialog.FileName;
-                    //url = comboBox.Text;
-                    DialogResult = true;
-                    Close();
-                }                
-            }
-            catch (System.UriFormatException)
-            {
-                System.Windows.MessageBox.Show("Neplatná adresa", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }       */     
-        }
-
         private void buttonSave_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = true;
-
-
-            /*WebRequest webRequest = WebRequest.Create(linksTextBox.Text);
-            WebResponse webResponse = webRequest.GetResponse();
-
-            string filename;
-
-            //attachment; filename*=UTF-8''vs_Community.exe
-            string header = webResponse.Headers["Content-Disposition"];
-            if (header != null)
+            if (Path.IsPathRooted(pathTextBox.Text))
             {
-                filename = header.Replace("attachment; ", "").Replace("attachment;", "").Replace("filename=", "").Replace("filename*=UTF-8''", "").Replace("\"", "");
+                DialogResult = true;
             }
             else
             {
-                Uri uri = new Uri(linksTextBox.Text);
-                filename = System.IO.Path.GetFileName(uri.LocalPath);
-            }
-
-            MessageBox.Show(filename);*/
-        }
-                
+                MessageBox.Show("Neplatná cesta", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }  
+        }               
 
         private void buttonBrowse_Click(object sender, RoutedEventArgs e)
         {
@@ -78,6 +40,17 @@ namespace downloader3
             {
                 pathTextBox.Text = dialog.FileName;
             }
+        }
+
+        private void linksTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            //MessageBox.Show("aaa");
+            /*if (!linksTextBox.Text.EndsWith("\n"))
+            {
+                int index = linksTextBox.CaretIndex;
+                linksTextBox.Text = linksTextBox.Text + "\n";
+                linksTextBox.CaretIndex = index;
+            }*/
         }
     }
 }

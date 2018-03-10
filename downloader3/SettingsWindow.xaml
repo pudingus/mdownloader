@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:downloader3"
         mc:Ignorable="d"
-        Title="{DynamicResource lang_settings}" Height="279" Width="300" WindowStartupLocation="CenterOwner" ResizeMode="CanMinimize">
+        Title="{DynamicResource lang_settings}" Height="279" Width="300" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <Grid>
         <Label Content="{DynamicResource lang_language}" HorizontalAlignment="Left" Margin="10,11,0,0" VerticalAlignment="Top" />
         <ComboBox x:Name="langSelection" HorizontalAlignment="Left" Margin="13,37,0,0" VerticalAlignment="Top" Width="209" SelectedIndex="0">

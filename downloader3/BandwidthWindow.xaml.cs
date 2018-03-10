@@ -29,7 +29,7 @@ namespace downloader3
             e.Handled = regex.IsMatch(e.Text);
         }
 
-        private void buttonLimit_Click(object sender, RoutedEventArgs e)
+        private void buttonOK_Click(object sender, RoutedEventArgs e)
         {
             if (speedLimit.ToString() != textBox.Text)
             {
@@ -42,6 +42,38 @@ namespace downloader3
         private void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+
+
+        private void textBox_PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (e.Command == ApplicationCommands.Copy ||
+                e.Command == ApplicationCommands.Cut ||
+                e.Command == ApplicationCommands.Paste)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void labelUp_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            int number = Int32.Parse(textBox.Text);
+            number = number + 100;
+            textBox.Text = number.ToString();
+        }
+
+        private void labelDown_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            int number = Int32.Parse(textBox.Text);
+            number = number - 100;
+            textBox.Text = number.ToString();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            textBox.Focus();
+            textBox.SelectAll();
         }
     }
 }

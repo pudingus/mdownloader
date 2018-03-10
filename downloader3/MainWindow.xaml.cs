@@ -16,6 +16,8 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Windows.Interop;
 using System.Drawing;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 
 namespace downloader3
 {
@@ -25,7 +27,9 @@ namespace downloader3
     public partial class MainWindow : Window
     {        
         private DispatcherTimer timer = new DispatcherTimer();
-        public SettingsStorage Settings = new SettingsStorage();        
+        public SettingsStorage Settings = new SettingsStorage();
+
+        System.Windows.Forms.NotifyIcon trayIcon;
 
         public MainWindow()
         {
@@ -34,9 +38,9 @@ namespace downloader3
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            buttonPause.IsEnabled = false;
-            buttonResume.IsEnabled = false;
-            buttonCancel.IsEnabled = false;
+            buttonPause.IsEnabled = true;
+            buttonResume.IsEnabled = true;
+            buttonRemove.IsEnabled = true;
 
             timer.Tick += new EventHandler(Timer_Tick);
             timer.Interval = new TimeSpan(0, 0, 1); //1 sekunda
@@ -60,6 +64,7 @@ namespace downloader3
                 item.Client = new DownloadClient(link.Url, link.Directory, item, link.TotalBytes, link.FileName);
                 item.Client.OnDownloadInit += Client_OnDownloadInit;
                 item.Client.OnDownloadCompleted += Client_OnDownloadCompleted;
+                item.Client.OnDownloadError += Client_OnDownloadError;
                 item.Client.SpeedLimit = link.SpeedLimit;                
 
                 Refresh(item);
@@ -87,6 +92,44 @@ namespace downloader3
                 }
                 DataView.Items.Add(item);
             }
+
+            var trayMenu = new System.Windows.Forms.ContextMenu();
+
+            var itemOpen = new System.Windows.Forms.MenuItem("Open", OnTrayOpen);
+            itemOpen.DefaultItem = true;
+
+
+            trayMenu.MenuItems.Add(itemOpen);
+            trayMenu.MenuItems.Add("Exit", OnTrayExit);
+
+            trayIcon = new System.Windows.Forms.NotifyIcon();
+            trayIcon.Text = "downloader3";
+            trayIcon.Icon = Properties.Resources.favicon;
+            trayIcon.ContextMenu = trayMenu;
+            trayIcon.Visible = true;
+
+            System.Media.SystemSounds.Beep.Play();
+            trayIcon.ShowBalloonTip(20, "title testbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "text text text text dfhdhfdfghfghfhgfjghjghjghjgsdflskdfsdkffghf \n aaaaaaaaaaaaaaaaaaaaaaa", System.Windows.Forms.ToolTipIcon.Info);
+        }
+
+        
+
+        private void OnTrayOpen(object sender, EventArgs e)
+        {
+            this.Focus();
+        }
+
+        private void OnTrayExit(object sender, EventArgs e)
+        {
+            trayIcon.Dispose();
+            System.Environment.Exit(0);
+        }
+
+        private void Client_OnDownloadError(DownloadClient client, MyData item, string message)
+        {
+            Refresh(item);
+            item.Remaining = Translate("lang_error") + ": " + message;
+            DataView.Items.Refresh();
         }
 
         private void Client_OnDownloadInit(DownloadClient client, MyData item)
@@ -109,6 +152,8 @@ namespace downloader3
                     string url = linksWindows.linksTextBox.GetLineText(i);
 
                     string dir = linksWindows.pathTextBox.Text;
+
+                    
                     
                     MyData item = new MyData();                    
                     item.Client = new DownloadClient(url, dir, item);
@@ -130,35 +175,35 @@ namespace downloader3
             }
         }
 
+        private void buttonResume_Click(object sender, RoutedEventArgs e)
+        {
+
+            MyData item = DataView.SelectedItem as MyData;
+
+            if (item.Client.State == DCStates.Paused || item.Client.State == DCStates.Error)
+            {
+                item.Client.Start();
+                Refresh(item);
+                DataView.Items.Refresh();
+            }
+        }
+
         private void buttonPause_Click(object sender, RoutedEventArgs e)
         {
             MyData item = DataView.SelectedItem as MyData;
-            item.Client.Pause();
-            Refresh(item);
-            DataView.Items.Refresh();            
-        }
 
-        private void buttonResume_Click(object sender, RoutedEventArgs e)
-        {
-            MyData item = DataView.SelectedItem as MyData;        
-
-            item.Client.Start();
-        }
-
-        private void buttonCancel_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataView.SelectedIndex == -1) return;
-            if (MessageBox.Show(Translate("lang_confirm_remove"), Translate("lang_cancel"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (item.Client.State == DCStates.Downloading)
             {
-                MyData item = DataView.SelectedItem as MyData;
-                item.Client.Cancel();                
-            }
-        }
+                item.Client.Pause();
+                Refresh(item);
+                DataView.Items.Refresh();
+            }            
+        }        
 
         private void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
             if (DataView.SelectedIndex == -1) return;
-            if (MessageBox.Show(Translate("lang_confirm_remove") + "\r" + Translate("lang_confirm_remove2"), Translate("lang_cancel"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (MessageBox.Show(Translate("lang_confirm_remove"), Translate("lang_cancel"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 MyData item = DataView.SelectedItem as MyData;
                 item.Client.Cancel();
@@ -238,19 +283,28 @@ namespace downloader3
             item.Name = item.Client.FileName;
             item.Progress = (double)item.Client.BytesDownloaded / item.Client.TotalBytes * 100;
             item.Size = string.Format("{0}/{1}", ConvertFileSize(item.Client.BytesDownloaded), ConvertFileSize(item.Client.TotalBytes));
-            double speed = item.Client.BytesPerSecond / 1024;
-            item.Speed = string.Format("{0} ({1}) KB/s ", speed.ToString("0.0"), item.Client.SpeedLimit);
+            double speed = item.Client.BytesPerSecond / 1024;            
 
-            if (item.Client.State == DCStates.Paused) item.Remaining = Translate("lang_paused");
+            if (item.Client.State == DCStates.Paused)
+            {
+                item.Remaining = Translate("lang_paused");
+                speed = 0;
+            }
             else if (item.Client.State == DCStates.Queue) item.Remaining = Translate("lang_inqueue");
             else if (item.Client.State == DCStates.Canceled) item.Remaining = Translate("lang_canceled");
             else if (item.Client.State == DCStates.Completed) item.Remaining = Translate("lang_completed");
             else if (item.Client.State == DCStates.Downloading)
             {
                 long sec = 0;
-                if (item.Client.BytesDownloaded > 0) sec = (item.Client.TotalBytes - item.Client.BytesDownloaded) * (long)item.Client.Elapsed / item.Client.BytesDownloaded;
+                if (item.Client.BytesDownloaded > 0 && item.Client.BytesPerSecond > 0) sec = (item.Client.TotalBytes - item.Client.BytesDownloaded) * 1 / item.Client.BytesPerSecond;
                 item.Remaining = ConvertTime(sec);
-            }                         
+            }
+            //else if (item.Client.State == DCStates.Error) item.Remaining = Translate("lang_error");
+            else if (item.Client.State == DCStates.Starting) item.Remaining = "Zahajování...";
+
+            item.Speed = string.Format("{0} ({1}) KB/s ", speed.ToString("0.0"), item.Client.SpeedLimit);
+
+            //RefreshButtons();
         }
 
         private void Client_OnDownloadCompleted(DownloadClient client, MyData item)
@@ -299,7 +353,7 @@ namespace downloader3
             else if (bytes >= GB) return string.Format("{0:0.0} GB", (bytes / GB));
             else if (bytes >= MB) return string.Format("{0:0.0} MB", (bytes / MB));
             else if (bytes >= 0) return string.Format("{0:0.0} kB", (bytes / KB));
-            else return "error";
+            else return "unk";
         }
 
         private string ConvertTime(long sec)
@@ -328,6 +382,15 @@ namespace downloader3
             if (File.Exists(path)) Process.Start(path);            
         }
 
+
+        protected void HandleDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (DataView.SelectedIndex == -1) return;
+            MyData item = DataView.SelectedItem as MyData;
+            string path = Path.Combine(item.Client.Directory, item.Client.FileName);
+            if (File.Exists(path)) Process.Start(path);
+        }
+
         private void MenuItem_Click_1(object sender, RoutedEventArgs e) //Otevřít ve složce
         {
             if (DataView.SelectedIndex == -1) return;
@@ -350,12 +413,11 @@ namespace downloader3
             MyData item = DataView.SelectedItem as MyData;
 
             RenameWindow renameWindow = new RenameWindow();
-            renameWindow.FileName = item.Name;
             renameWindow.Owner = this;
+            renameWindow.item = item;
+
             if (renameWindow.ShowDialog() == true)
-            {
-                item.Client.Rename(renameWindow.FileName);
-                item.Name = renameWindow.FileName;
+            {                
                 DataView.Items.Refresh();
             }
         }
@@ -418,30 +480,9 @@ namespace downloader3
 
         private void DataView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            MyData item = DataView.SelectedItem as MyData;
-
-            if (item != null)
-            {
-                if (item.Client.State == DCStates.Completed)
-                {
-                    buttonPause.IsEnabled = false;
-                    buttonResume.IsEnabled = false;
-                    buttonCancel.IsEnabled = false;
-                }
-                else
-                {
-                    buttonPause.IsEnabled = true;
-                    buttonResume.IsEnabled = true;
-                    buttonCancel.IsEnabled = true;
-                }
-            }           
+            //RefreshButtons();
         }
 
-        protected void HandleDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            //var track = ((ListViewItem)sender).Content as Track; //Casting back to the binded Track
-            MessageBox.Show("kek");
-        }
 
         public static void SelectCulture(string culture)
         {
@@ -466,7 +507,6 @@ namespace downloader3
             Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
             Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
         }
-
     }
 
     public class MyData

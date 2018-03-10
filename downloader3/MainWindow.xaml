@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:downloader3"
         x:Class="downloader3.MainWindow"
         mc:Ignorable="d"
-        Title="Downloader" Height="479" Width="738" Closing="Window_Closing" Loaded="Window_Loaded" Icon="favicon.ico">
+        Title="Downloader" Height="512" Width="895" Closing="Window_Closing" Loaded="Window_Loaded" Icon="favicon.ico" Background="#FFF0F0F0">
     <Window.Resources>
 
         <LinearGradientBrush x:Key="ProgressBarBackground" EndPoint="1,0" StartPoint="0,0">
@@ -96,11 +96,11 @@
 
     </Window.Resources>
 
-    <Grid Background="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}">
+    <Grid>
         <ListView x:Name="DataView" Margin="10,49,10,10" SelectionChanged="DataView_SelectionChanged" Foreground="Black" >
             <ListView.Resources>
                 <ContextMenu x:Key="ItemContextMenu">
-                    <MenuItem Header="{DynamicResource lang_open}" Background="WhiteSmoke" Click="MenuItem_Click">
+                    <MenuItem Header="{DynamicResource lang_open}" Background="WhiteSmoke" Click="MenuItem_Click" FontWeight="Bold">
 
                     </MenuItem>
                     <MenuItem Header="{DynamicResource lang_openinfolder}" Background="WhiteSmoke" Click="MenuItem_Click_1">
@@ -127,14 +127,16 @@
             </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Width="30" Header="">
+                    <GridViewColumn Width="250" Header="{DynamicResource lang_name}">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <Image Height="16" Width="16" Source="{Binding Icon}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Image Height="16" Width="16" Margin="0, 0, 5, 0" Source="{Binding Icon}" />
+                                    <TextBlock Text="{Binding Name}"/>
+                                </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Width="130" Header="{DynamicResource lang_name}" DisplayMemberBinding="{Binding Name}" />
+                    </GridViewColumn>                    
                     <GridViewColumn Width="120" Header="{DynamicResource lang_size}" DisplayMemberBinding="{Binding Size}" />
                     <GridViewColumn Width="160" Header="{DynamicResource lang_status}" >
                         <GridViewColumn.CellTemplate>
@@ -151,28 +153,25 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button x:Name="buttonAdd" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="40" Click="buttonAdd_Click" Height="24" FontSize="16" ToolTip="Přidat odkazy" >
+        <Button x:Name="buttonAdd" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="40" Click="buttonAdd_Click" Height="24" FontSize="16" ToolTip="{DynamicResource lang_addlinks}" >
             <Image Height="30" Source="{StaticResource appbar_addDrawingImage}" Stretch="Fill" Width="30" VerticalAlignment="Center" HorizontalAlignment="Left"/>
         </Button>
-        <Button x:Name="buttonResume" HorizontalAlignment="Left" Margin="120,10,0,0" VerticalAlignment="Top" Width="50" Height="24" Click="buttonResume_Click">
+        <Button x:Name="buttonResume" HorizontalAlignment="Left" Margin="120,10,0,0" VerticalAlignment="Top" Width="50" Height="24" Click="buttonResume_Click" ToolTip="{DynamicResource lang_resume}">
             <Image Height="32" Source="{StaticResource appbar_control_playDrawingImage}" Stretch="Fill" Width="32" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Button>
-        <Button x:Name="buttonPause" HorizontalAlignment="Left" Margin="175,10,0,0" VerticalAlignment="Top" Width="50" Height="24" Click="buttonPause_Click" >
+        <Button x:Name="buttonPause" HorizontalAlignment="Left" Margin="175,10,0,0" VerticalAlignment="Top" Width="50" Height="24" Click="buttonPause_Click" ToolTip="{DynamicResource lang_pause}">
             <Image Height="32" Source="{StaticResource appbar_control_pauseDrawingImage}" Stretch="Fill" Width="32" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Button>
-        <Button x:Name="buttonCancel" HorizontalAlignment="Left" Margin="230,10,0,0" VerticalAlignment="Top" Width="50" Height="24" Click="buttonCancel_Click" >
+        <Button x:Name="buttonRemove" HorizontalAlignment="Left" Margin="230,10,0,0" VerticalAlignment="Top" Width="50" Height="24" Click="buttonRemove_Click" ToolTip="{DynamicResource lang_remove}" >
             <Image Height="32" Source="{StaticResource appbar_closeDrawingImage}" Stretch="Fill" Width="32" VerticalAlignment="Center"/>
         </Button>
-        <Button x:Name="buttonRemove" HorizontalAlignment="Left" Height="24" Margin="285,10,0,0" VerticalAlignment="Top" Width="50" Click="buttonRemove_Click">
-            <Image Height="32" Source="{StaticResource appbar_minusDrawingImage}" Stretch="Fill" Width="32" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-        </Button>
-        <Button x:Name="buttonUp" HorizontalAlignment="Left" Margin="389,10,0,0" VerticalAlignment="Top" Width="40" Height="24" Click="buttonUp_Click" >
+        <Button x:Name="buttonUp" HorizontalAlignment="Left" Margin="389,10,0,0" VerticalAlignment="Top" Width="40" Height="24" Click="buttonUp_Click" ToolTip="{DynamicResource lang_moveup}" >
             <Image Height="32" Source="{StaticResource appbar_chevron_upDrawingImage}" Stretch="Fill" Width="32" VerticalAlignment="Center"/>
         </Button>
-        <Button x:Name="buttonDown" HorizontalAlignment="Left" Margin="434,10,0,0" VerticalAlignment="Top" Width="40" Height="24" Click="buttonDown_Click" >
+        <Button x:Name="buttonDown" HorizontalAlignment="Left" Margin="434,10,0,0" VerticalAlignment="Top" Width="40" Height="24" Click="buttonDown_Click" ToolTip="{DynamicResource lang_movedown}" >
             <Image Height="32" Source="{StaticResource appbar_chevron_downDrawingImage}" Stretch="Fill" Width="32" VerticalAlignment="Center"/>
         </Button>
-        <Button x:Name="buttonSettings" Margin="0,10,10,0" HorizontalAlignment="Right" Width="40" Height="24" VerticalAlignment="Top" Click="buttonSettings_Click" >
+        <Button x:Name="buttonSettings" Margin="0,10,10,0" HorizontalAlignment="Right" Width="40" Height="24" VerticalAlignment="Top" Click="buttonSettings_Click" ToolTip="{DynamicResource lang_settings}">
             <Image Height="32" Source="{StaticResource appbar_settingsDrawingImage}" Stretch="Fill" Width="32" VerticalAlignment="Center"/>
         </Button>
     </Grid>

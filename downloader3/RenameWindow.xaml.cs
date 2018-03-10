@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 namespace downloader3
 {
@@ -6,28 +7,25 @@ namespace downloader3
     /// Interaction logic for RenameWindow.xaml
     /// </summary>
     public partial class RenameWindow : Window
-    {
-        private string fileName;
-
-        public string FileName
-        {
-            get { return fileName; }
-            set { textBox.Text = value; fileName = value; }
-        }
+    {    
+        public MyData item;
 
         public RenameWindow()
         {
             InitializeComponent();
         }
 
-        private void buttonRename_Click(object sender, RoutedEventArgs e)
-        {
-            if (fileName != textBox.Text)
+        private void buttonOK_Click(object sender, RoutedEventArgs e)
+        {            
+            try
             {
-                fileName = textBox.Text;
+                item.Client.Rename(textBox.Text);
                 DialogResult = true;
             }
-            Close();
+            catch (ArgumentException ex)
+            {                    
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void buttonCancel_Click(object sender, RoutedEventArgs e)
@@ -37,6 +35,8 @@ namespace downloader3
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            textBox.Text = item.Name;
+
             textBox.Focus();
             textBox.SelectAll();
         }
