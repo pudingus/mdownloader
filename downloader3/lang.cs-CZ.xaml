@@ -25,8 +25,9 @@
     <system:String x:Key="lang_speedlimit">Omezit rychlost</system:String>
     <system:String x:Key="lang_speedlimit_default">Vychozí limit rychlosti pro nové soubory</system:String>
 
-    <system:String x:Key="lang_confirm_remove">Opravdu chcete odebrat tento soubor ze seznamu?</system:String>
-    <system:String x:Key="lang_confirm_remove2">Původní soubor zůstane na disku</system:String>
+    <system:String x:Key="lang_confirm_remove">Opravdu chcete odebrat tyto soubory ze seznamu?</system:String>
+    <system:String x:Key="lang_also_delete">Smazat také z disku</system:String>
+    <system:String x:Key="lang_confirm_remove2">Potvrdit</system:String>
     <system:String x:Key="lang_canceled">Zrušeno</system:String>
     <system:String x:Key="lang_paused">Pozastaveno</system:String>
     <system:String x:Key="lang_completed">Dokončeno</system:String>
@@ -38,7 +39,25 @@
     <system:String x:Key="lang_ok">OK</system:String>
     <system:String x:Key="lang_cancel">Zrušit</system:String>
 
-    <system:String x:Key="lang_moveup">Přesunout nahoru</system:String>
-    <system:String x:Key="lang_movedown">Přesunout dolů</system:String>
+    <system:String x:Key="lang_moveup">Posunout nahoru</system:String>
+    <system:String x:Key="lang_movedown">Posunout dolů</system:String>
+
+    <system:String x:Key="lang_directory">Adresář</system:String>
+    <system:String x:Key="lang_starting">Zahajování...</system:String>
+
+    <system:String x:Key="lang_invalid_path">Neplatná cesta</system:String>
+    <system:String x:Key="lang_invalid_links">Seznam obsahuje neplatné odkazy. Chcete je odstranit?</system:String>
+    <system:String x:Key="lang_file_exists">Soubor už existuje</system:String>
+    <system:String x:Key="lang_file_size_mismatch">Velikost souboru na serveru nesouhlasí. Soubor byl změnen nebo odkaz přestal platit.</system:String>
+    <system:String x:Key="lang_max_downloads">Maximální počet stahovaní</system:String>
+    <system:String x:Key="lang_show_notification">Zobrazit oznámení</system:String>
+    <system:String x:Key="lang_play_sound">Přehrát zvuk</system:String>
+    <system:String x:Key="lang_when_completed">Po dokončení stahování:</system:String>
+
+    <system:String x:Key="lang_browse">Procházet...</system:String>
+    <system:String x:Key="lang_no_valid_links">Žádné platné odkazy</system:String>
+    <system:String x:Key="lang_unable_to_extract">Nepodařilo se extrahovat odkaz</system:String>
+    <system:String x:Key="lang_download_completed">Stahování dokončeno</system:String>
+
 
 </ResourceDictionary>

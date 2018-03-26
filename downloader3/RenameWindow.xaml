@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="{DynamicResource lang_rename}" Height="102.902" Width="397.783" WindowStartupLocation="CenterOwner" Loaded="Window_Loaded" ResizeMode="NoResize">
     <Grid>
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="22" Margin="8,10,0,0" Text="TextBox" VerticalAlignment="Top" Width="366" />
+        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="22" Margin="8,10,0,0" Text="TextBox" VerticalAlignment="Top" Width="366" KeyDown="textBox_KeyDown" />
         <Button x:Name="buttonOK" Content="{DynamicResource lang_ok}" HorizontalAlignment="Left" Height="22" Margin="229,38,0,0" VerticalAlignment="Top" Width="70" Click="buttonOK_Click" />
         <Button x:Name="buttonCancel" Content="{DynamicResource lang_cancel}" HorizontalAlignment="Left" Height="22" Margin="304,38,0,0" VerticalAlignment="Top" Width="70" Click="buttonCancel_Click" />
     </Grid>

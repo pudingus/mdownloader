@@ -8,11 +8,9 @@
         Title="{DynamicResource lang_speedlimit}" Height="80.903" Width="341.139" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" Loaded="Window_Loaded">
     <Grid>
         <Grid Margin="16,13,0,0" Height="22" VerticalAlignment="Top" HorizontalAlignment="Left" Width="80">
-            <TextBox x:Name="textBox" TextWrapping="Wrap" Text="1000" PreviewTextInput="NumberValidationTextBox" CommandManager.PreviewExecuted="textBox_PreviewExecuted" ContextMenu="{x:Null}"/>
-            <Label x:Name="labelUp" Content="▲" Margin="0,2,3,0" VerticalAlignment="Top" Padding="0" Background="Gainsboro" FontSize="6" Foreground="#FF2C2C2C" HorizontalContentAlignment="Center" Height="8" VerticalContentAlignment="Center" MouseDown="labelUp_MouseDown" HorizontalAlignment="Right" Width="10"/>
-            <Label x:Name="labelDown" Content="▼" HorizontalAlignment="Right" Margin="0,0,3,3" Padding="0" Background="Gainsboro" Width="10" FontSize="6" Foreground="#FF2C2C2C" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" MouseDown="labelDown_MouseDown" Height="8" VerticalAlignment="Bottom"/>
+            <TextBox x:Name="textBox" TextWrapping="Wrap" Text="1000" PreviewTextInput="textBox_PreviewTextInput" CommandManager.PreviewExecuted="textBox_PreviewExecuted" ContextMenu="{x:Null}" KeyDown="textBox_KeyDown" MaxLength="10"/>
         </Grid>
-        <Label Content="KB/s" HorizontalAlignment="Left" Margin="101,11,0,0" VerticalAlignment="Top" Height="24" />
+        <Label Content="kB/s" HorizontalAlignment="Left" Margin="101,11,0,0" VerticalAlignment="Top" Height="24" />
         <Button x:Name="buttonOK" Content="{DynamicResource lang_ok}" HorizontalAlignment="Left" Margin="169,13,0,0" VerticalAlignment="Top" Width="70" Click="buttonOK_Click" Height="22" />
         <Button x:Name="buttonCancel" Content="{DynamicResource lang_cancel}" HorizontalAlignment="Left" Height="22" Margin="244,13,0,0" VerticalAlignment="Top" Width="70" Click="buttonCancel_Click" />
     </Grid>

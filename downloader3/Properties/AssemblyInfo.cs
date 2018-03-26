@@ -5,12 +5,12 @@ using System.Windows;
 // Obecné informace o sestavení se řídí přes následující
 // sadu atributů. Změnou hodnot těchto atributů se upraví informace
 // přidružené k sestavení.
-[assembly: AssemblyTitle("downloader3")]
+[assembly: AssemblyTitle("wyDownloader")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("downloader3")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyProduct("wyDownloader")]
+[assembly: AssemblyCopyright("Copyright ©  2016-2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

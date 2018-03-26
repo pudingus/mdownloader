@@ -9,42 +9,27 @@ namespace downloader3
     /// Interaction logic for BandwidthWindow.xaml
     /// </summary>
     public partial class BandwidthWindow : Window
-    {
-        private int speedLimit;
-
-        public int SpeedLimit
-        {
-            get { return speedLimit; }
-            set { textBox.Text = value.ToString(); speedLimit = value; }
-        }
-
+    {            
         public BandwidthWindow()
         {
             InitializeComponent();
         }
 
-        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
-        {
-            Regex regex = new Regex("[^0-9]+"); //pouze čísla
-            e.Handled = regex.IsMatch(e.Text);
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {            
+            textBox.Focus();
+            textBox.SelectAll();
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)
-        {
-            if (speedLimit.ToString() != textBox.Text)
-            {
-                speedLimit = Int32.Parse(textBox.Text);
-                DialogResult = true;
-            }
-            Close();
+        {            
+            DialogResult = true;            
         }
 
         private void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
-
-
 
         private void textBox_PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
         {
@@ -54,26 +39,20 @@ namespace downloader3
             {
                 e.Handled = true;
             }
+        }      
+
+        private void textBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+"); //pouze čísla
+            e.Handled = regex.IsMatch(e.Text);
         }
 
-        private void labelUp_MouseDown(object sender, MouseButtonEventArgs e)
+        private void textBox_KeyDown(object sender, KeyEventArgs e)
         {
-            int number = Int32.Parse(textBox.Text);
-            number = number + 100;
-            textBox.Text = number.ToString();
-        }
-
-        private void labelDown_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            int number = Int32.Parse(textBox.Text);
-            number = number - 100;
-            textBox.Text = number.ToString();
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            textBox.Focus();
-            textBox.SelectAll();
+            if (e.Key == Key.Enter)
+            {                
+                DialogResult = true;
+            }
         }
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace downloader3
@@ -16,7 +15,7 @@ namespace downloader3
         public string Directory { get; set; }
         public string Url { get; set; }
         public long TotalBytes { get; set; }
-        public int SpeedLimit { get; set; }
+        public long SpeedLimit { get; set; }
         public bool Completed { get; set; }
     }
 
@@ -25,11 +24,13 @@ namespace downloader3
     {
         public List<Link> List = new List<Link>();
 
-        private string filename = "links.xml";
+        private static string filename = "links.xml";
+        private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private static string path = Path.Combine(appdata, "wyDownloader", filename);
 
         public LinksStorage Load()
         {
-            using (StreamReader sr = new StreamReader(filename))
+            using (StreamReader sr = new StreamReader(path))
             {
                 XmlSerializer xmls = new XmlSerializer(typeof(LinksStorage));
                 return xmls.Deserialize(sr) as LinksStorage;
@@ -38,7 +39,7 @@ namespace downloader3
 
         public void Save()
         {
-            using (StreamWriter sw = new StreamWriter(filename))
+            using (StreamWriter sw = new StreamWriter(path))
             {
                 XmlSerializer xmls = new XmlSerializer(typeof(LinksStorage));
                 xmls.Serialize(sw, this);

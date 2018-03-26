@@ -18,6 +18,7 @@ using System.Windows.Interop;
 using System.Drawing;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Threading.Tasks;
 
 namespace downloader3
 {
@@ -26,78 +27,25 @@ namespace downloader3
     /// </summary>
     public partial class MainWindow : Window
     {        
+        public SettingsStorage settings = new SettingsStorage();
         private DispatcherTimer timer = new DispatcherTimer();
-        public SettingsStorage Settings = new SettingsStorage();
+        private LvData lastItem;
+        private string baseTitle = "";
 
         System.Windows.Forms.NotifyIcon trayIcon;
 
         public MainWindow()
         {
-            InitializeComponent();            
+            InitializeComponent();
+            baseTitle = Title;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            buttonPause.IsEnabled = true;
-            buttonResume.IsEnabled = true;
-            buttonRemove.IsEnabled = true;
-
-            timer.Tick += new EventHandler(Timer_Tick);
-            timer.Interval = new TimeSpan(0, 0, 1); //1 sekunda
-            timer.Start();
-
-            Settings = Settings.Load();
-            Settings.Save();
-
-            SelectCulture(Settings.Language);
-
-            LinksStorage links = new LinksStorage();
-            links = links.Load();
-
-            foreach (Link link in links.List)
-            {
-                string path = Path.Combine(link.Directory, link.FileName);
-                MyData item = new MyData();
-                FileInfo file = new FileInfo(path);
-
-                item.Name = link.FileName;
-                item.Client = new DownloadClient(link.Url, link.Directory, item, link.TotalBytes, link.FileName);
-                item.Client.OnDownloadInit += Client_OnDownloadInit;
-                item.Client.OnDownloadCompleted += Client_OnDownloadCompleted;
-                item.Client.OnDownloadError += Client_OnDownloadError;
-                item.Client.SpeedLimit = link.SpeedLimit;                
-
-                Refresh(item);
-                                
-                //jestli soubor na seznamu existuje, použít tu ikonu, jinak vytvořit dočasný soubor
-                if (File.Exists(path))
-                { 
-                    var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(path);
-                    var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                    sysicon.Dispose();
-                    item.Icon = bmpSrc;
-                }
-                else
-                {
-                    string tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + Path.GetExtension(link.FileName));
-                    FileStream fs = File.Create(tempPath);
-
-                    var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(tempPath);
-                    var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                    sysicon.Dispose();
-                    item.Icon = bmpSrc;
-
-                    fs.Close();
-                    File.Delete(tempPath);
-                }
-                DataView.Items.Add(item);
-            }
-
             var trayMenu = new System.Windows.Forms.ContextMenu();
 
             var itemOpen = new System.Windows.Forms.MenuItem("Open", OnTrayOpen);
             itemOpen.DefaultItem = true;
-
 
             trayMenu.MenuItems.Add(itemOpen);
             trayMenu.MenuItems.Add("Exit", OnTrayExit);
@@ -108,11 +56,114 @@ namespace downloader3
             trayIcon.ContextMenu = trayMenu;
             trayIcon.Visible = true;
 
-            System.Media.SystemSounds.Beep.Play();
-            trayIcon.ShowBalloonTip(20, "title testbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "text text text text dfhdhfdfghfghfhgfjghjghjghjgsdflskdfsdkffghf \n aaaaaaaaaaaaaaaaaaaaaaa", System.Windows.Forms.ToolTipIcon.Info);
+            timer.Tick += new EventHandler(Timer_Tick);
+            timer.Interval = new TimeSpan(0, 0, 1); //1 sekunda
+            timer.Start();
+
+            settings = settings.Load();
+            settings.Save();
+
+            Lang.SetLanguage(settings.Language);
+
+            LinksStorage links = new LinksStorage();
+            links = links.Load();
+
+            foreach (Link link in links.List)
+            {
+                string path = Path.Combine(link.Directory, link.FileName);
+                LvData item = new LvData();
+
+                item.Client = new DownloadClient(link.Url, link.Directory, item, link.TotalBytes, link.FileName);
+                item.Client.OnDownloadInit += Client_OnDownloadInit;
+                item.Client.OnDownloadCompleted += Client_OnDownloadCompleted;
+                item.Client.OnDownloadError += Client_OnDownloadError;
+                item.Client.OnDownloadStateChanged += Client_OnDownloadStateChanged;
+                item.Client.SpeedLimit = link.SpeedLimit;
+                Refresh(item);
+
+                Icon sysicon;
+
+                if (File.Exists(path)) sysicon = ShellIcon.GetSmallIcon(path);                
+                else
+                {
+                    string ext = Path.GetExtension(item.Name);
+                    if (ext == "") ext = item.Name;
+                    sysicon = ShellIcon.GetSmallIconFromExtension(ext);
+                }
+
+                var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                sysicon.Dispose();
+                item.Icon = bmpSrc;
+
+                listView.Items.Add(item);
+            }
         }
 
-        
+        private void Client_OnDownloadStateChanged(DownloadClient client, LvData item, States oldState, States newState)
+        {
+            if (newState != States.Error)
+            {
+                Refresh(item);
+                listView.Items.Refresh();
+                if (oldState == States.Error) item.ErrorMsg = null;
+            }            
+        }
+
+        private void Client_OnDownloadInit(DownloadClient client, LvData item)
+        {
+            Icon sysicon = ShellIcon.GetSmallIcon(client.FullPath);
+            var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            sysicon.Dispose();
+            item.Icon = bmpSrc;            
+        }
+
+        private void Client_OnDownloadError(DownloadClient client, LvData item, string message)
+        {            
+            item.ErrorMsg = message;
+            Refresh(item);
+            listView.Items.Refresh();
+
+            bool found = false;
+            int j = 0;
+            while (!found && j < listView.Items.Count)
+            {
+                LvData it = listView.Items[j] as LvData;
+                if (it.Client.State == States.Queue)
+                {
+                    it.Client.Start();
+                    found = true;
+                }
+                j++;
+            }
+
+            if (settings.ShowNotification) trayIcon.ShowBalloonTip(10, Lang.Translate("lang_error"), message, System.Windows.Forms.ToolTipIcon.Error);
+            if (settings.PlaySound) System.Media.SystemSounds.Hand.Play();
+        }
+
+        private void Client_OnDownloadCompleted(DownloadClient client, LvData item)
+        {
+            Icon sysicon = ShellIcon.GetSmallIcon(client.FullPath);
+            var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            sysicon.Dispose();
+            item.Icon = bmpSrc;                       
+
+            bool found = false;
+            int j = 0;
+            while (!found && j < listView.Items.Count)
+            {
+                LvData it = listView.Items[j] as LvData;
+                if (it.Client.State == States.Queue)
+                {
+                    it.Client.Start();
+                    found = true;
+                }
+                j++;
+            }
+
+            if (settings.ShowNotification) trayIcon.ShowBalloonTip(10, Lang.Translate("lang_download_completed"), client.FileName, System.Windows.Forms.ToolTipIcon.Info);
+            if (settings.PlaySound) System.Media.SystemSounds.Asterisk.Play();
+        }
+
 
         private void OnTrayOpen(object sender, EventArgs e)
         {
@@ -121,125 +172,127 @@ namespace downloader3
 
         private void OnTrayExit(object sender, EventArgs e)
         {
-            trayIcon.Dispose();
-            System.Environment.Exit(0);
-        }
-
-        private void Client_OnDownloadError(DownloadClient client, MyData item, string message)
-        {
-            Refresh(item);
-            item.Remaining = Translate("lang_error") + ": " + message;
-            DataView.Items.Refresh();
-        }
-
-        private void Client_OnDownloadInit(DownloadClient client, MyData item)
-        {
-            string path = Path.Combine(client.Directory, client.FileName);
-            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(path);
-            var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            sysicon.Dispose();
-            item.Icon = bmpSrc;
+            this.Close();
         }
 
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
         {
-            LinksWindow linksWindows = new LinksWindow();
+            AddWindow linksWindows = new AddWindow();
             linksWindows.Owner = this;
+            
             if (linksWindows.ShowDialog() == true)
-            {   
-                for (int i = 0; i < linksWindows.linksTextBox.LineCount; i++)
+            {
+                string dir = linksWindows.pathTextBox.Text;
+                foreach (string url in linksWindows.urlList)
                 {
-                    string url = linksWindows.linksTextBox.GetLineText(i);
-
-                    string dir = linksWindows.pathTextBox.Text;
-
-                    
-                    
-                    MyData item = new MyData();                    
+                    LvData item = new LvData();
                     item.Client = new DownloadClient(url, dir, item);
-                    item.Name = item.Client.FileName;
                     item.Client.OnDownloadInit += Client_OnDownloadInit;
                     item.Client.OnDownloadCompleted += Client_OnDownloadCompleted;
-                    item.Client.SpeedLimit = Settings.SpeedLimit;
+                    item.Client.OnDownloadError += Client_OnDownloadError;
+                    item.Client.OnDownloadStateChanged += Client_OnDownloadStateChanged;
+                    item.Client.SpeedLimit = settings.SpeedLimit;
 
-                    int downloadingCount = 0;
-                    foreach (MyData it in DataView.Items)
-                        if (it.Client.State == DCStates.Downloading) downloadingCount++;
-
-                    if (downloadingCount < Settings.MaxDownloads) item.Client.Start();
-                    else item.Client.Queue();                    
+                    if (DownloadClient.ActiveCount < settings.MaxDownloads) item.Client.Start();
+                    else item.Client.Queue();
 
                     Refresh(item);
-                    DataView.Items.Add(item);                    
-                }                
-            }
+
+                    string ext = Path.GetExtension(item.Name);
+                    if (ext == "") ext = item.Name;
+                    var sysicon = ShellIcon.GetSmallIconFromExtension(ext);
+
+
+                    var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                    sysicon.Dispose();
+                    item.Icon = bmpSrc;
+
+                    listView.Items.Add(item);
+                }
+
+                //přidáno zpoždění protože z nějakého důvodu ScrollIntoView nefunguje hned po přidání položky
+                Task.Delay(20).ContinueWith(t => {
+                    Dispatcher.Invoke(() => {
+                        //tento kód se za 20ms spustí asynchronně na jiném vlákně
+                        listView.Focus();
+                        listView.SelectedIndex = listView.Items.Count - 1;
+                        listView.ScrollIntoView(listView.SelectedItem);                        
+                    }); 
+                });
+            }              
         }
 
         private void buttonResume_Click(object sender, RoutedEventArgs e)
         {
+            List<LvData> selectedList = new List<LvData>();
+            foreach (LvData item in listView.Items) if (listView.SelectedItems.Contains(item)) selectedList.Add(item);
 
-            MyData item = DataView.SelectedItem as MyData;
-
-            if (item.Client.State == DCStates.Paused || item.Client.State == DCStates.Error)
+            foreach (LvData item in selectedList)
             {
-                item.Client.Start();
-                Refresh(item);
-                DataView.Items.Refresh();
+                if (item.Client.State == States.Paused || 
+                    item.Client.State == States.Error)
+                {
+                    if (DownloadClient.ActiveCount < settings.MaxDownloads) item.Client.Start();                    
+                    else item.Client.Queue();
+                }
             }
         }
 
         private void buttonPause_Click(object sender, RoutedEventArgs e)
-        {
-            MyData item = DataView.SelectedItem as MyData;
-
-            if (item.Client.State == DCStates.Downloading)
+        {  
+            foreach (LvData item in listView.SelectedItems)
             {
-                item.Client.Pause();
-                Refresh(item);
-                DataView.Items.Refresh();
-            }            
+                if (item.Client.State == States.Downloading || 
+                    item.Client.State == States.Starting ||
+                    item.Client.State == States.Queue)
+                {
+                    item.Client.Pause();                    
+                }
+            }
         }        
 
         private void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (DataView.SelectedIndex == -1) return;
-            if (MessageBox.Show(Translate("lang_confirm_remove"), Translate("lang_cancel"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+            if (listView.SelectedIndex == -1) return;
+            
+            RemoveWindow removeWindow = new RemoveWindow();
+            removeWindow.Owner = this;
+            if (removeWindow.ShowDialog() == true)
             {
-                MyData item = DataView.SelectedItem as MyData;
-                item.Client.Cancel();
+                List<LvData> selectedList = new List<LvData>();
+                foreach (LvData item in listView.SelectedItems) selectedList.Add(item);
 
-                int fak = DataView.SelectedIndex;
-                if (DataView.Items.Count == fak + 1) fak--;  //pokud je vybraná položka poslední, vybraný index se posune o jedno zpět, jinak zůstane stejný
-                DataView.Items.Remove(item);
-                DataView.SelectedIndex = fak; //ikdyž zůstane stejný, je potřeba ho znovu vybrat
+                foreach (LvData item in selectedList)
+                {
+                    if (removeWindow.deleteFile) item.Client.Cancel();
+                    listView.Items.Remove(item);
+                }
             }
         }
 
         private void buttonUp_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataView.SelectedIndex == -1) return;
-            int index = DataView.SelectedIndex;
+        {         
+            int index = listView.SelectedIndex;
 
             if (index > 0)
             {
-                object item = DataView.SelectedItem;
-                DataView.Items.RemoveAt(index);
-                DataView.Items.Insert(index - 1, item);
-                DataView.SelectedItems.Add(item);
+                object item = listView.SelectedItem;
+                listView.Items.RemoveAt(index);
+                listView.Items.Insert(index - 1, item);
+                listView.SelectedItems.Add(item);
             }
         }
 
         private void buttonDown_Click(object sender, RoutedEventArgs e)
         {
-            if (DataView.SelectedIndex == -1) return;
-            int index = DataView.SelectedIndex;
+            int index = listView.SelectedIndex;
 
-            if (index < DataView.Items.Count - 1)
+            if (index < listView.Items.Count - 1 && index != -1)
             {
-                object item = DataView.SelectedItem;
-                DataView.Items.RemoveAt(index);
-                DataView.Items.Insert(index + 1, item);
-                DataView.SelectedItems.Add(item);
+                object item = listView.SelectedItem;
+                listView.Items.RemoveAt(index);
+                listView.Items.Insert(index + 1, item);
+                listView.SelectedItems.Add(item);
             }
         }
 
@@ -247,155 +300,116 @@ namespace downloader3
         {
             SettingsWindow settingsWindow = new SettingsWindow();
             settingsWindow.Owner = this;
-            settingsWindow.speedLimit.Text = Settings.SpeedLimit.ToString();
-            settingsWindow.maxDownloads.Text = Settings.MaxDownloads.ToString();
-            if (Settings.Language == "cs-CZ") settingsWindow.langSelection.SelectedIndex = 0;
-            if (Settings.Language == "en-US") settingsWindow.langSelection.SelectedIndex = 1;
+            settingsWindow.speedLimit.Text = (settings.SpeedLimit / 1024).ToString();
+            settingsWindow.maxDownloads.Text = settings.MaxDownloads.ToString();
+            settingsWindow.checkboxNotify.IsChecked = settings.ShowNotification;
+            settingsWindow.checkboxSound.IsChecked = settings.PlaySound;
+            settingsWindow.Lang = settings.Language;
             if (settingsWindow.ShowDialog() == true) //uložit nastavení
             {
-                Settings.SpeedLimit = Int32.Parse(settingsWindow.speedLimit.Text);
-                Settings.Language = settingsWindow.language;
-                Settings.MaxDownloads = Int32.Parse(settingsWindow.maxDownloads.Text);                
-                Settings.Save();
-
-                SelectCulture(Settings.Language);
-                foreach (MyData item in DataView.Items) Refresh(item);
-                DataView.Items.Refresh();
+                settings.SpeedLimit = Int64.Parse(settingsWindow.speedLimit.Text) * 1024;
+                settings.Language = settingsWindow.Lang;
+                settings.MaxDownloads = Int32.Parse(settingsWindow.maxDownloads.Text);
+                settings.ShowNotification = settingsWindow.checkboxNotify.IsChecked.GetValueOrDefault();
+                settings.PlaySound = settingsWindow.checkboxSound.IsChecked.GetValueOrDefault();
+                settings.Save();
+                CheckQueue();
+                Lang.SetLanguage(settings.Language);
+                foreach (LvData item in listView.Items) Refresh(item);
+                listView.Items.Refresh();
             }
-        }        
+        }
+
+        private void CheckQueue()
+        {
+            int i = listView.Items.Count - 1;
+            while (DownloadClient.ActiveCount > settings.MaxDownloads && i >= 0)
+            {
+                LvData it = listView.Items[i] as LvData;
+                if (it.Client.State == States.Downloading || it.Client.State == States.Starting)
+                    it.Client.Queue();
+                i--;
+            }
+
+            i = 0;
+            while (DownloadClient.ActiveCount < settings.MaxDownloads && i < listView.Items.Count)
+            {
+                LvData it = listView.Items[i] as LvData;
+                if (it.Client.State == States.Queue)
+                    it.Client.Start();
+                i++;
+            }
+        }
 
         private void Timer_Tick(object sender, EventArgs e) //1 sekunda
-        {
-            int downloadingCount = 0;
-            foreach (MyData item in DataView.Items)
-            {                
-                if (item.Client.State == DCStates.Downloading)
+        {  
+            long totalSpeed = 0;
+
+            if (DownloadClient.ActiveCount > 0)
+            {
+                foreach (LvData item in listView.Items)
                 {
                     Refresh(item);
-                    downloadingCount++;
-                }            
+                    totalSpeed += item.Client.BytesPerSecond;
+                }
+                listView.Items.Refresh();
             }
-            if (downloadingCount > 0) DataView.Items.Refresh();
-        }
-        
-        public void Refresh(MyData item)
-        {
-            item.Name = item.Client.FileName;
-            item.Progress = (double)item.Client.BytesDownloaded / item.Client.TotalBytes * 100;
-            item.Size = string.Format("{0}/{1}", ConvertFileSize(item.Client.BytesDownloaded), ConvertFileSize(item.Client.TotalBytes));
-            double speed = item.Client.BytesPerSecond / 1024;            
 
-            if (item.Client.State == DCStates.Paused)
-            {
-                item.Remaining = Translate("lang_paused");
-                speed = 0;
-            }
-            else if (item.Client.State == DCStates.Queue) item.Remaining = Translate("lang_inqueue");
-            else if (item.Client.State == DCStates.Canceled) item.Remaining = Translate("lang_canceled");
-            else if (item.Client.State == DCStates.Completed) item.Remaining = Translate("lang_completed");
-            else if (item.Client.State == DCStates.Downloading)
+            Title = baseTitle + " - " + DownloadClient.ActiveCount + "/" + listView.Items.Count + " - " + Util.ConvertBytes(totalSpeed) + "/s";
+
+        }
+
+        public void Refresh(LvData item)
+        {           
+            if (item.Client.FileName == "") item.Name = item.Client.Url;            
+            else item.Name = item.Client.FileName;
+            if (item.Client.TotalBytes > 0) item.Progress = (double)item.Client.BytesDownloaded / item.Client.TotalBytes * 100;
+            item.Size = string.Format("{0}/{1}", Util.ConvertBytes(item.Client.BytesDownloaded), Util.ConvertBytes(item.Client.TotalBytes));
+            if (item.Client.State == States.Paused) item.Remaining = Lang.Translate("lang_paused");            
+            else if (item.Client.State == States.Queue) item.Remaining = Lang.Translate("lang_inqueue");
+            else if (item.Client.State == States.Canceled) item.Remaining = Lang.Translate("lang_canceled");
+            else if (item.Client.State == States.Completed) item.Remaining = Lang.Translate("lang_completed");
+            else if (item.Client.State == States.Downloading)
             {
                 long sec = 0;
                 if (item.Client.BytesDownloaded > 0 && item.Client.BytesPerSecond > 0) sec = (item.Client.TotalBytes - item.Client.BytesDownloaded) * 1 / item.Client.BytesPerSecond;
-                item.Remaining = ConvertTime(sec);
+                item.Remaining = Util.ConvertTime(sec);
             }
-            //else if (item.Client.State == DCStates.Error) item.Remaining = Translate("lang_error");
-            else if (item.Client.State == DCStates.Starting) item.Remaining = "Zahajování...";
+            else if (item.Client.State == States.Error) item.Remaining = Lang.Translate("lang_error") + ": " + item.ErrorMsg;
+            else if (item.Client.State == States.Starting) item.Remaining = Lang.Translate("lang_starting");            
 
-            item.Speed = string.Format("{0} ({1}) KB/s ", speed.ToString("0.0"), item.Client.SpeedLimit);
+            if(item.Client.SpeedLimit > 0)            
+                item.Speed = string.Format("{0}/s [{1}/s]", Util.ConvertBytes(item.Client.BytesPerSecond), Util.ConvertBytes(item.Client.SpeedLimit));
+            else item.Speed = string.Format("{0}/s", Util.ConvertBytes(item.Client.BytesPerSecond));
 
-            //RefreshButtons();
-        }
+            item.Directory = item.Client.Directory;
+        }        
 
-        private void Client_OnDownloadCompleted(DownloadClient client, MyData item)
+
+        private void Item_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            string path = Path.Combine(item.Client.Directory, item.Client.FileName);
-            var sysicon = System.Drawing.Icon.ExtractAssociatedIcon(path);
-            var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            sysicon.Dispose();
-            item.Icon = bmpSrc;
-            Refresh(item);
-            DataView.Items.Refresh();
-
-            int downloadingCount = 0;
-            int initCount = 0;
-            foreach (MyData it in DataView.Items)
+            LvData item = (sender as ListViewItem).DataContext as LvData;
+            try
             {
-                if (it.Client.State == DCStates.Downloading) downloadingCount++;
-                else if (it.Client.State == DCStates.Queue) initCount++;
+                if (File.Exists(item.Client.FullPath)) Process.Start(item.Client.FullPath);
             }
-
-            if (downloadingCount < Settings.MaxDownloads && initCount > 0)
-            {
-                bool found = false;
-                int j = 0;
-                while (!found && j < DataView.Items.Count)
-                {
-                    MyData it = DataView.Items[j] as MyData;
-                    if (it.Client.State == DCStates.Queue)
-                    {
-                        it.Client.Start();
-                        found = true;
-                    }
-                    j++;
-                }
-            }
-        }
-
-        private string ConvertFileSize(long bytes)
-        {
-            double KB = Math.Pow(1024, 1);
-            double MB = Math.Pow(1024, 2);
-            double GB = Math.Pow(1024, 3);
-            double TB = Math.Pow(1024, 4);
-
-            if (bytes >= TB) return string.Format("{0:0.0} TB", (bytes / TB));
-            else if (bytes >= GB) return string.Format("{0:0.0} GB", (bytes / GB));
-            else if (bytes >= MB) return string.Format("{0:0.0} MB", (bytes / MB));
-            else if (bytes >= 0) return string.Format("{0:0.0} kB", (bytes / KB));
-            else return "unk";
-        }
-
-        private string ConvertTime(long sec)
-        {
-            string str = " ";
-            long min, hour;
-            
-            min = sec / 60;
-            sec = sec - (min * 60);
-            hour = min / 60;
-            min = min - (hour * 60);
-
-            if (hour == 0 && min == 0) str = string.Format("{0}s", sec);
-            else if (min >= 1 && hour == 0) str = string.Format("{0}m {1}s", min, sec);
-            else if (hour >= 1 && min == 0) str = string.Format("{0}h", hour);
-            else str = string.Format("{0}h {1}m", hour, min);
-
-            return str;
+            catch (Win32Exception) { } //uživatel stisknul "ne" při pokusu získat admin oprávnění
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e) //Otevřít
         {
-            if (DataView.SelectedIndex == -1) return;
-            MyData item = DataView.SelectedItem as MyData;
-            string path = Path.Combine(item.Client.Directory, item.Client.FileName);
-            if (File.Exists(path)) Process.Start(path);            
-        }
-
-
-        protected void HandleDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (DataView.SelectedIndex == -1) return;
-            MyData item = DataView.SelectedItem as MyData;
-            string path = Path.Combine(item.Client.Directory, item.Client.FileName);
-            if (File.Exists(path)) Process.Start(path);
+            LvData item = lastItem;
+            try
+            {
+                if (File.Exists(item.Client.FullPath)) Process.Start(item.Client.FullPath);
+            }
+            catch (Win32Exception) { }
         }
 
         private void MenuItem_Click_1(object sender, RoutedEventArgs e) //Otevřít ve složce
         {
-            if (DataView.SelectedIndex == -1) return;
-            MyData item = DataView.SelectedItem as MyData;
-
+            LvData item = lastItem;
+            
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.FileName = "explorer.exe";
@@ -403,67 +417,55 @@ namespace downloader3
             if (File.Exists(path)) startInfo.Arguments = "/select, " + path;
             else startInfo.Arguments = item.Client.Directory;
             process.StartInfo = startInfo;
-            process.Start();
+            process.Start();            
         }
 
         private void MenuItem_Click_2(object sender, RoutedEventArgs e) //Přejmenovat
         {
-            if (DataView.SelectedIndex == -1) return;
+            LvData item = lastItem;
 
-            MyData item = DataView.SelectedItem as MyData;
+            if (item.Client.FileName == "") return;
 
             RenameWindow renameWindow = new RenameWindow();
             renameWindow.Owner = this;
             renameWindow.item = item;
 
             if (renameWindow.ShowDialog() == true)
-            {                
-                DataView.Items.Refresh();
+            {
+                Refresh(item);
+                listView.Items.Refresh();
             }
         }
 
         private void MenuItem_Click_3(object sender, RoutedEventArgs e) //Omezit rychlost
         {
-            if (DataView.SelectedIndex == -1) return;
-
-            MyData item = DataView.SelectedItem as MyData;
+            LvData item = lastItem;
 
             BandwidthWindow bandwidthWindow = new BandwidthWindow();
-            bandwidthWindow.SpeedLimit = item.Client.SpeedLimit; //vyjímka
+            bandwidthWindow.textBox.Text = (item.Client.SpeedLimit / 1024).ToString();
             bandwidthWindow.Owner = this;
             if (bandwidthWindow.ShowDialog() == true)
             {
-                item.Client.SpeedLimit = bandwidthWindow.SpeedLimit;
-                item.Speed = string.Format("{0} ({1}) KB/s ", 0, item.Client.SpeedLimit);
-                DataView.Items.Refresh();
+                item.Client.SpeedLimit = Int64.Parse(bandwidthWindow.textBox.Text) * 1024;
+                Refresh(item);
+                listView.Items.Refresh();
             }
         }
 
         private void MenuItem_Click_4(object sender, RoutedEventArgs e) //Info
         {
-            if (DataView.SelectedIndex == -1) return;
-            MyData item = DataView.SelectedItem as MyData;
+            LvData item = lastItem;
+
             MessageBox.Show(item.Name + "\r" + 
                             item.Client.State.ToString() + "\r" +
                             item.Client.Url);
-        }
-
-        public string Translate(string resource)
-        {
-            string result = (string)TryFindResource(resource);
-            if (result == null)
-            {
-                MessageBox.Show("Language resource \"" + resource + "\" is invalid", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return resource;
-            }
-            return result;
-        }
+        }        
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             LinksStorage links = new LinksStorage();
 
-            foreach (MyData item in DataView.Items)
+            foreach (LvData item in listView.Items)
             {
                 Link link = new Link();
                 link.Directory = item.Client.Directory;
@@ -474,42 +476,32 @@ namespace downloader3
                 links.List.Add(link);
             }
             links.Save();
-            
+            trayIcon.Dispose();            
             System.Environment.Exit(1);
-        }
+        }       
 
-        private void DataView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void ListViewItem_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
-            //RefreshButtons();
-        }
+            ListViewItem cItem = sender as ListViewItem;
+            LvData item = cItem.DataContext as LvData;
+            lastItem = item;
 
-
-        public static void SelectCulture(string culture)
-        {
-            if (String.IsNullOrEmpty(culture)) return;
-
-            var dictionaryList = Application.Current.Resources.MergedDictionaries.ToList();
-
-            string requestedCulture = string.Format("StringResources.{0}.xaml", culture);
-            var resourceDictionary = dictionaryList.FirstOrDefault(d => d.Source.OriginalString == requestedCulture);
-
-            if (resourceDictionary == null)
+            if (cItem != null && item != null)
             {
-                requestedCulture = "StringResources.en-US.xaml";
-                resourceDictionary = dictionaryList.FirstOrDefault(d => d.Source.OriginalString == requestedCulture);
-            }
-            else
-            {
-                Application.Current.Resources.MergedDictionaries.Remove(resourceDictionary);
-                Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
-            }
+                //zakáže nebo povolí položku "Otevřít" podle toho, jestli soubor existuje
+                MenuItem menuItem = cItem.ContextMenu.Items[0] as MenuItem;
+                if (File.Exists(item.Client.FullPath)) menuItem.IsEnabled = true;
+                else menuItem.IsEnabled = false;
 
-            Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
-            Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
+                //zakáže položku "Přejmenovat", pokud finální jméno souboru ještě nebylo získáno
+                menuItem = cItem.ContextMenu.Items[2] as MenuItem;
+                if (item.Client.FileName == "") menuItem.IsEnabled = false;
+                else menuItem.IsEnabled = true;
+            }
         }
     }
 
-    public class MyData
+    public class LvData
     {
         public ImageSource Icon { get; set; }
         public string Name { get; set; }
@@ -517,7 +509,8 @@ namespace downloader3
         public double Progress { get; set; }
         public string Speed { get; set; }
         public string Remaining { get; set; }
+        public string Directory { get; set; }
         public DownloadClient Client { get; set; }
+        public string ErrorMsg { get; set; }
     }
-
 }

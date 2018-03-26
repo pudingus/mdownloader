@@ -5,7 +5,7 @@
 
     <system:String x:Key="lang_name">Name</system:String>
     <system:String x:Key="lang_size">Size</system:String>
-    <system:String x:Key="lang_status">Status</system:String>
+    <system:String x:Key="lang_status">Progress</system:String>
     <system:String x:Key="lang_speed">Speed</system:String>
     <system:String x:Key="lang_time">Remaining time</system:String>
 
@@ -26,7 +26,8 @@
     <system:String x:Key="lang_speedlimit_default">Default speed limit for new files</system:String>
 
     <system:String x:Key="lang_confirm_remove">Do you want to remove this file from the list?</system:String>
-    <system:String x:Key="lang_confirm_remove2">Original file will remain on the disk.</system:String>
+    <system:String x:Key="lang_also_delete">Also delete from disk</system:String>
+    <system:String x:Key="lang_confirm_remove2">Confirm</system:String>
     <system:String x:Key="lang_canceled">Canceled</system:String>
     <system:String x:Key="lang_paused">Paused</system:String>
     <system:String x:Key="lang_completed">Completed</system:String>
@@ -40,5 +41,24 @@
 
     <system:String x:Key="lang_moveup">Move up</system:String>
     <system:String x:Key="lang_movedown">Move down</system:String>
+
+    <system:String x:Key="lang_directory">Directory</system:String>
+
+    <system:String x:Key="lang_starting">Starting...</system:String>
+
+    <system:String x:Key="lang_invalid_path">Invalid path</system:String>
+    <system:String x:Key="lang_invalid_links">List contains invalid links. Do you want to remove them?</system:String>
+    <system:String x:Key="lang_file_exists">File already exists</system:String>
+    <system:String x:Key="lang_file_size_mismatch">File size on server is different. File was changed or link is no longer valid.</system:String>
+    <system:String x:Key="lang_max_downloads">Max concurent downloads</system:String>
+    <system:String x:Key="lang_show_notification">Show notification</system:String>
+    <system:String x:Key="lang_play_sound">Play sound</system:String>
+    <system:String x:Key="lang_when_completed">When download is completed:</system:String>
+
+    <system:String x:Key="lang_browse">Browse...</system:String>
+
+    <system:String x:Key="lang_no_valid_links">No valid links</system:String>
+    <system:String x:Key="lang_unable_to_extract">Unable to extract link</system:String>
+    <system:String x:Key="lang_download_completed">Download completed</system:String>
 
 </ResourceDictionary>

@@ -9,25 +9,49 @@ namespace downloader3
     /// </summary>
     public partial class SettingsWindow : Window
     {
-        public string language;
+        private string _lang;
+        public string Lang {
+            get {
+                if (langSelection.SelectedIndex == 0) _lang = "cs-CZ";
+                else if (langSelection.SelectedIndex == 1) _lang = "en-US";
+                return _lang;
+            }
+            set {
+                _lang = value;
+                if (_lang == "cs-CZ") langSelection.SelectedIndex = 0;
+                else if (_lang == "en-US") langSelection.SelectedIndex = 1;
+            }
+        }
 
         public SettingsWindow()
         {
             InitializeComponent();
         }
 
-        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
-        {
-            Regex regex = new Regex("[^0-9]+"); //pouze čísla
-            e.Handled = regex.IsMatch(e.Text);
+        private void buttonSave_Click(object sender, RoutedEventArgs e)
+        {            
+            DialogResult = true;
         }
 
-        private void buttonSave_Click(object sender, RoutedEventArgs e)
+        private void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
-            if (langSelection.SelectedIndex == 0) language = "cs-CZ";
-            else if (langSelection.SelectedIndex == 1) language = "en-US";
-            DialogResult = true;
             Close();
+        }
+
+        private void textBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {            
+            Regex regex = new Regex("[^0-9]+"); //pouze čísla
+            e.Handled = regex.IsMatch(e.Text);            
+        }
+
+        private void textBox_PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (e.Command == ApplicationCommands.Copy ||
+                e.Command == ApplicationCommands.Cut ||
+                e.Command == ApplicationCommands.Paste)
+            {
+                e.Handled = true;
+            }
         }
     }
 }
