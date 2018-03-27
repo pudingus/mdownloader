@@ -18,7 +18,7 @@ namespace downloader3
         public bool PlaySound           { get; set; } = true;
 
         private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        private static string path = Path.Combine(appdata, "wyDownloader");
+        private static string path = Path.Combine(appdata, App.appName);
         private static string filepath = Path.Combine(path, "settings.xml");
 
         public SettingsStorage Load()
@@ -33,7 +33,7 @@ namespace downloader3
                     storage = xmls.Deserialize(sr) as SettingsStorage;
                 }                                 
             }
-            catch (IOException ex)
+            catch (FileNotFoundException ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().ToString());
             }

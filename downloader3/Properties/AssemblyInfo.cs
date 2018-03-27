@@ -1,15 +1,16 @@
-﻿using System.Reflection;
+﻿using downloader3;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 
 // Obecné informace o sestavení se řídí přes následující
 // sadu atributů. Změnou hodnot těchto atributů se upraví informace
 // přidružené k sestavení.
-[assembly: AssemblyTitle("wyDownloader")]
+[assembly: AssemblyTitle(App.appName)]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("wyDownloader")]
+[assembly: AssemblyProduct(App.appName)]
 [assembly: AssemblyCopyright("Copyright ©  2016-2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

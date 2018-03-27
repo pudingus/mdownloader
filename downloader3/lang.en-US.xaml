@@ -15,11 +15,22 @@
     <system:String x:Key="lang_settings">Settings</system:String>
 
     <system:String x:Key="lang_addlinks">Add links</system:String>
+    <system:String x:Key="lang_add">Add</system:String>
+    <system:String x:Key="lang_links">Links:</system:String>
+    <system:String x:Key="lang_links_help">One link per line</system:String>
+    <system:String x:Key="lang_save_to">Save to:</system:String>
     <system:String x:Key="lang_save">Save</system:String>
+    <system:String x:Key="lang_help">Help</system:String>
+    
+    <system:String x:Key="lang_supported1">Supported protocols:</system:String>
+    <system:String x:Key="lang_supported2">Supported link types:</system:String>
+    <system:String x:Key="lang_supported3">Servers with direct link extraction from HTML support:</system:String>
+    <system:String x:Key="lang_direct_links">Direct links:</system:String>
 
     <system:String x:Key="lang_open">Open</system:String>
     <system:String x:Key="lang_openinfolder">Open in folder</system:String>
     <system:String x:Key="lang_rename">Rename</system:String>
+    <system:String x:Key="lang_copy_link">Copy link</system:String>    
 
     <system:String x:Key="lang_language">Language</system:String>
     <system:String x:Key="lang_speedlimit">Speed limit</system:String>
@@ -50,7 +61,7 @@
     <system:String x:Key="lang_invalid_links">List contains invalid links. Do you want to remove them?</system:String>
     <system:String x:Key="lang_file_exists">File already exists</system:String>
     <system:String x:Key="lang_file_size_mismatch">File size on server is different. File was changed or link is no longer valid.</system:String>
-    <system:String x:Key="lang_max_downloads">Max concurent downloads</system:String>
+    <system:String x:Key="lang_max_downloads">Max concurrent downloads</system:String>
     <system:String x:Key="lang_show_notification">Show notification</system:String>
     <system:String x:Key="lang_play_sound">Play sound</system:String>
     <system:String x:Key="lang_when_completed">When download is completed:</system:String>

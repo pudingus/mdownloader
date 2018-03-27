@@ -26,7 +26,7 @@ namespace downloader3
 
         private static string filename = "links.xml";
         private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        private static string path = Path.Combine(appdata, "wyDownloader", filename);
+        private static string path = Path.Combine(appdata, App.appName, filename);
 
         public LinksStorage Load()
         {

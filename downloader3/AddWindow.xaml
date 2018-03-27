@@ -5,11 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:downloader3"
         mc:Ignorable="d"
-        Title="{DynamicResource lang_addlinks}" Height="246.25" Width="508.656" WindowStartupLocation="CenterOwner" Loaded="Window_Loaded">
+        Title="{DynamicResource lang_addlinks}" Height="300" Width="540" WindowStartupLocation="CenterOwner" Loaded="Window_Loaded" MinWidth="240" MinHeight="150">
     <Grid>
-        <Button x:Name="buttonSave" Content="{DynamicResource lang_save}" Margin="0,0,10,10" HorizontalAlignment="Right" Width="75" Height="24" VerticalAlignment="Bottom" Click="buttonSave_Click" />
-        <TextBox x:Name="linksTextBox" Margin="10,10,10,39" Text="" AcceptsReturn="True" TextChanged="linksTextBox_TextChanged" VerticalScrollBarVisibility="Auto"/>
+        <Button x:Name="buttonSave" Content="{DynamicResource lang_add}" Margin="0,0,10,10" HorizontalAlignment="Right" Width="75" Height="24" VerticalAlignment="Bottom" Click="buttonSave_Click" />
+        <TextBox x:Name="linksTextBox" Margin="10,29,10,60" Text="" AcceptsReturn="True" TextChanged="linksTextBox_TextChanged" VerticalScrollBarVisibility="Auto" ToolTip=""/>
         <TextBox x:Name="pathTextBox" Margin="10,0,127,11" Text="C:\" Height="23" VerticalAlignment="Bottom"/>
         <Button x:Name="buttonBrowse" Content="..." ToolTip="{DynamicResource lang_browse}" HorizontalAlignment="Right" Margin="0,0,90,10" Width="32" Height="24" VerticalAlignment="Bottom" Click="buttonBrowse_Click"/>
+        <Label Content="{DynamicResource lang_links}" HorizontalAlignment="Left" Margin="10,3,0,0" VerticalAlignment="Top"/>
+        <Label Content="{DynamicResource lang_links_help}" HorizontalAlignment="Right" Margin="0,3,39,0" VerticalAlignment="Top" Foreground="#FF858585" FontStyle="Italic"/>
+        <Label Content="{DynamicResource lang_save_to}" HorizontalAlignment="Left" Margin="10,0,0,34" Height="26" VerticalAlignment="Bottom"/>
+        <Button Content="?" ToolTip="{DynamicResource lang_help}" Margin="0,2,10,0" VerticalAlignment="Top" HorizontalAlignment="Right" Width="24" Click="Button_Click"/>
     </Grid>
 </Window>

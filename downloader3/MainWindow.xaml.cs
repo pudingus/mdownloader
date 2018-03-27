@@ -29,21 +29,19 @@ namespace downloader3
     {        
         public SettingsStorage settings = new SettingsStorage();
         private DispatcherTimer timer = new DispatcherTimer();
-        private LvData lastItem;
-        private string baseTitle = "";
+        private LvData lastItem;        
 
         System.Windows.Forms.NotifyIcon trayIcon;
 
         public MainWindow()
         {
             InitializeComponent();
-            baseTitle = Title;
+            Title = App.appName;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var trayMenu = new System.Windows.Forms.ContextMenu();
-
             var itemOpen = new System.Windows.Forms.MenuItem("Open", OnTrayOpen);
             itemOpen.DefaultItem = true;
 
@@ -51,7 +49,7 @@ namespace downloader3
             trayMenu.MenuItems.Add("Exit", OnTrayExit);
 
             trayIcon = new System.Windows.Forms.NotifyIcon();
-            trayIcon.Text = "downloader3";
+            trayIcon.Text = App.appName;
             trayIcon.Icon = Properties.Resources.favicon;
             trayIcon.ContextMenu = trayMenu;
             trayIcon.Visible = true;
@@ -79,22 +77,8 @@ namespace downloader3
                 item.Client.OnDownloadError += Client_OnDownloadError;
                 item.Client.OnDownloadStateChanged += Client_OnDownloadStateChanged;
                 item.Client.SpeedLimit = link.SpeedLimit;
-                Refresh(item);
-
-                Icon sysicon;
-
-                if (File.Exists(path)) sysicon = ShellIcon.GetSmallIcon(path);                
-                else
-                {
-                    string ext = Path.GetExtension(item.Name);
-                    if (ext == "") ext = item.Name;
-                    sysicon = ShellIcon.GetSmallIconFromExtension(ext);
-                }
-
-                var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                sysicon.Dispose();
-                item.Icon = bmpSrc;
-
+                item.Refresh();
+                item.LoadIcon();
                 listView.Items.Add(item);
             }
         }
@@ -103,7 +87,7 @@ namespace downloader3
         {
             if (newState != States.Error)
             {
-                Refresh(item);
+                item.Refresh();
                 listView.Items.Refresh();
                 if (oldState == States.Error) item.ErrorMsg = null;
             }            
@@ -111,16 +95,13 @@ namespace downloader3
 
         private void Client_OnDownloadInit(DownloadClient client, LvData item)
         {
-            Icon sysicon = ShellIcon.GetSmallIcon(client.FullPath);
-            var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            sysicon.Dispose();
-            item.Icon = bmpSrc;            
+            item.LoadIcon();       
         }
 
         private void Client_OnDownloadError(DownloadClient client, LvData item, string message)
         {            
             item.ErrorMsg = message;
-            Refresh(item);
+            item.Refresh();
             listView.Items.Refresh();
 
             bool found = false;
@@ -136,16 +117,14 @@ namespace downloader3
                 j++;
             }
 
-            if (settings.ShowNotification) trayIcon.ShowBalloonTip(10, Lang.Translate("lang_error"), message, System.Windows.Forms.ToolTipIcon.Error);
+            if (settings.ShowNotification)
+                trayIcon.ShowBalloonTip(10, Lang.Translate("lang_error"), message, System.Windows.Forms.ToolTipIcon.Error);
             if (settings.PlaySound) System.Media.SystemSounds.Hand.Play();
         }
 
         private void Client_OnDownloadCompleted(DownloadClient client, LvData item)
         {
-            Icon sysicon = ShellIcon.GetSmallIcon(client.FullPath);
-            var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            sysicon.Dispose();
-            item.Icon = bmpSrc;                       
+            item.LoadIcon();                     
 
             bool found = false;
             int j = 0;
@@ -160,7 +139,8 @@ namespace downloader3
                 j++;
             }
 
-            if (settings.ShowNotification) trayIcon.ShowBalloonTip(10, Lang.Translate("lang_download_completed"), client.FileName, System.Windows.Forms.ToolTipIcon.Info);
+            if (settings.ShowNotification)
+                trayIcon.ShowBalloonTip(10, Lang.Translate("lang_download_completed"), client.FileName, System.Windows.Forms.ToolTipIcon.Info);
             if (settings.PlaySound) System.Media.SystemSounds.Asterisk.Play();
         }
 
@@ -195,18 +175,8 @@ namespace downloader3
 
                     if (DownloadClient.ActiveCount < settings.MaxDownloads) item.Client.Start();
                     else item.Client.Queue();
-
-                    Refresh(item);
-
-                    string ext = Path.GetExtension(item.Name);
-                    if (ext == "") ext = item.Name;
-                    var sysicon = ShellIcon.GetSmallIconFromExtension(ext);
-
-
-                    var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(sysicon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                    sysicon.Dispose();
-                    item.Icon = bmpSrc;
-
+                    item.Refresh();
+                    item.LoadIcon();
                     listView.Items.Add(item);
                 }
 
@@ -315,7 +285,7 @@ namespace downloader3
                 settings.Save();
                 CheckQueue();
                 Lang.SetLanguage(settings.Language);
-                foreach (LvData item in listView.Items) Refresh(item);
+                foreach (LvData item in listView.Items) item.Refresh();
                 listView.Items.Refresh();
             }
         }
@@ -349,42 +319,17 @@ namespace downloader3
             {
                 foreach (LvData item in listView.Items)
                 {
-                    Refresh(item);
+                    item.Refresh();
                     totalSpeed += item.Client.BytesPerSecond;
                 }
                 listView.Items.Refresh();
             }
 
-            Title = baseTitle + " - " + DownloadClient.ActiveCount + "/" + listView.Items.Count + " - " + Util.ConvertBytes(totalSpeed) + "/s";
-
+            Title = App.appName + " - " + 
+                DownloadClient.ActiveCount + "/" + 
+                listView.Items.Count + " - " + 
+                Util.ConvertBytes(totalSpeed) + "/s";
         }
-
-        public void Refresh(LvData item)
-        {           
-            if (item.Client.FileName == "") item.Name = item.Client.Url;            
-            else item.Name = item.Client.FileName;
-            if (item.Client.TotalBytes > 0) item.Progress = (double)item.Client.BytesDownloaded / item.Client.TotalBytes * 100;
-            item.Size = string.Format("{0}/{1}", Util.ConvertBytes(item.Client.BytesDownloaded), Util.ConvertBytes(item.Client.TotalBytes));
-            if (item.Client.State == States.Paused) item.Remaining = Lang.Translate("lang_paused");            
-            else if (item.Client.State == States.Queue) item.Remaining = Lang.Translate("lang_inqueue");
-            else if (item.Client.State == States.Canceled) item.Remaining = Lang.Translate("lang_canceled");
-            else if (item.Client.State == States.Completed) item.Remaining = Lang.Translate("lang_completed");
-            else if (item.Client.State == States.Downloading)
-            {
-                long sec = 0;
-                if (item.Client.BytesDownloaded > 0 && item.Client.BytesPerSecond > 0) sec = (item.Client.TotalBytes - item.Client.BytesDownloaded) * 1 / item.Client.BytesPerSecond;
-                item.Remaining = Util.ConvertTime(sec);
-            }
-            else if (item.Client.State == States.Error) item.Remaining = Lang.Translate("lang_error") + ": " + item.ErrorMsg;
-            else if (item.Client.State == States.Starting) item.Remaining = Lang.Translate("lang_starting");            
-
-            if(item.Client.SpeedLimit > 0)            
-                item.Speed = string.Format("{0}/s [{1}/s]", Util.ConvertBytes(item.Client.BytesPerSecond), Util.ConvertBytes(item.Client.SpeedLimit));
-            else item.Speed = string.Format("{0}/s", Util.ConvertBytes(item.Client.BytesPerSecond));
-
-            item.Directory = item.Client.Directory;
-        }        
-
 
         private void Item_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -396,7 +341,7 @@ namespace downloader3
             catch (Win32Exception) { } //uživatel stisknul "ne" při pokusu získat admin oprávnění
         }
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e) //Otevřít
+        private void MenuItemOpen_Click(object sender, RoutedEventArgs e) //Otevřít
         {
             LvData item = lastItem;
             try
@@ -406,7 +351,7 @@ namespace downloader3
             catch (Win32Exception) { }
         }
 
-        private void MenuItem_Click_1(object sender, RoutedEventArgs e) //Otevřít ve složce
+        private void MenuItemFolder_Click(object sender, RoutedEventArgs e) //Otevřít ve složce
         {
             LvData item = lastItem;
             
@@ -420,7 +365,7 @@ namespace downloader3
             process.Start();            
         }
 
-        private void MenuItem_Click_2(object sender, RoutedEventArgs e) //Přejmenovat
+        private void MenuItemRename_Click(object sender, RoutedEventArgs e) //Přejmenovat
         {
             LvData item = lastItem;
 
@@ -432,12 +377,12 @@ namespace downloader3
 
             if (renameWindow.ShowDialog() == true)
             {
-                Refresh(item);
+                item.Refresh();
                 listView.Items.Refresh();
             }
         }
 
-        private void MenuItem_Click_3(object sender, RoutedEventArgs e) //Omezit rychlost
+        private void MenuItemLimit_Click(object sender, RoutedEventArgs e) //Omezit rychlost
         {
             LvData item = lastItem;
 
@@ -447,19 +392,17 @@ namespace downloader3
             if (bandwidthWindow.ShowDialog() == true)
             {
                 item.Client.SpeedLimit = Int64.Parse(bandwidthWindow.textBox.Text) * 1024;
-                Refresh(item);
+                item.Refresh();
                 listView.Items.Refresh();
             }
         }
 
-        private void MenuItem_Click_4(object sender, RoutedEventArgs e) //Info
+        private void MenuItemCopy_Click(object sender, RoutedEventArgs e)
         {
             LvData item = lastItem;
 
-            MessageBox.Show(item.Name + "\r" + 
-                            item.Client.State.ToString() + "\r" +
-                            item.Client.Url);
-        }        
+            Clipboard.SetText(item.Client.Url);
+        }     
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
@@ -499,18 +442,5 @@ namespace downloader3
                 else menuItem.IsEnabled = true;
             }
         }
-    }
-
-    public class LvData
-    {
-        public ImageSource Icon { get; set; }
-        public string Name { get; set; }
-        public string Size { get; set; }
-        public double Progress { get; set; }
-        public string Speed { get; set; }
-        public string Remaining { get; set; }
-        public string Directory { get; set; }
-        public DownloadClient Client { get; set; }
-        public string ErrorMsg { get; set; }
-    }
+    }    
 }

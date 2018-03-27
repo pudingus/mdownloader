@@ -10,6 +10,6 @@ namespace downloader3
     /// </summary>
     public partial class App : Application
     {
-        
+        public const string appName = "mDownloader";
     }
 }

@@ -92,5 +92,13 @@ namespace downloader3
         {
             pathTextBox.Text = KnownFolders.Downloads.Path;
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            AddHelpWindow window = new AddHelpWindow();
+            window.Owner = this;
+            window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            window.ShowDialog();
+        }
     }
 }
