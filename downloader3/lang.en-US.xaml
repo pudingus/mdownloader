@@ -38,7 +38,7 @@
 
     <system:String x:Key="lang_confirm_remove">Do you want to remove this file from the list?</system:String>
     <system:String x:Key="lang_also_delete">Also delete from disk</system:String>
-    <system:String x:Key="lang_confirm_remove2">Confirm</system:String>
+    <system:String x:Key="lang_confirm">Confirm</system:String>
     <system:String x:Key="lang_canceled">Canceled</system:String>
     <system:String x:Key="lang_paused">Paused</system:String>
     <system:String x:Key="lang_completed">Completed</system:String>
@@ -71,5 +71,8 @@
     <system:String x:Key="lang_no_valid_links">No valid links</system:String>
     <system:String x:Key="lang_unable_to_extract">Unable to extract link</system:String>
     <system:String x:Key="lang_download_completed">Download completed</system:String>
+    
+    <system:String x:Key="lang_active_download">There are active downloads. Do you really want to exit the program?</system:String>
+    
 
 </ResourceDictionary>

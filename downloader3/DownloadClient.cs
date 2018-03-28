@@ -33,17 +33,56 @@ namespace downloader3
         public delegate void DownloadStateChanged(DownloadClient client, LvData item, States oldState, States newState);
         public event DownloadStateChanged OnDownloadStateChanged;
 
+         
+        /// <summary>
+        /// Získá celkovou velikost souboru v bajtech
+        /// </summary>
         public long TotalBytes          { get; private set; }
+
+        /// <summary>
+        /// Získá počet stažených bajtů
+        /// </summary>
         public long BytesDownloaded     { get; private set; }
+
+        /// <summary>
+        /// Získá rychlost stahování v bajtech za sekundu
+        /// </summary>
         public long BytesPerSecond      { get; private set; }
+
+        /// <summary>
+        /// Získá umístění složky, kde bude soubor uložený
+        /// </summary>
         public string Directory         { get; private set; }
+
+        /// <summary>
+        /// Získá název souboru
+        /// </summary>
         public string FileName          { get; private set; } = "";
+
+        /// <summary>
+        /// Získá Url adresu odkazu na stahovaný soubor
+        /// </summary>
         public string Url               { get; private set; }
-        public long SpeedLimit          { get; set; } //v bajtech 
-        public LvData Item              { get; private set; }
+
+        /// <summary>
+        /// Získá nebo nastaví rychlostní limit v bajtech
+        /// </summary>
+        public long SpeedLimit          { get; set; }
+
+
+        /// <summary>
+        /// Získá úplnou cestu ke stahovanému souboru
+        /// </summary>
         public string FullPath          { get { return Path.Combine(Directory, FileName); } }
+
+        /// <summary>
+        /// Získá počet aktivních stahování
+        /// </summary>
         public static int ActiveCount   { get; private set; }
 
+        /// <summary>
+        /// Získá stav současného stahování
+        /// </summary>
         private States _state;
         public States State {
             get {
@@ -71,9 +110,11 @@ namespace downloader3
                     }), null);
                 }
             }
-        }      
+        }
 
-                
+        private LvData Item { get; set; }
+
+
         private Thread downloadThread; 
         private int processed = 0;
         private DispatcherTimer timer = new DispatcherTimer();
@@ -218,9 +259,12 @@ namespace downloader3
         }
 
         /// <summary>
+        /// Zařadí stahování do fronty
+        /// </summary>
+        /// <remarks>
         /// Funguje podobně jako pozastavení. Slouží pro rozlišení, jestli bylo stahování přerušeno uživatelem
         /// nebo programem, který spravuje položky ve frontě.
-        /// </summary>
+        /// </remarks>
         public void Queue()
         {
             State = States.Queue;
@@ -421,6 +465,10 @@ namespace downloader3
                 CallError(e.Message);
             }
             catch (IOException e) //k souboru nelze přistupovat
+            {
+                CallError(e.Message);
+            }
+            catch (Exception e)
             {
                 CallError(e.Message);
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows;
 using System.Xml.Serialization;
 
 namespace downloader3
@@ -28,21 +29,68 @@ namespace downloader3
         private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         private static string path = Path.Combine(appdata, App.appName, filename);
 
+        /// <summary>
+        /// Načte seznam odkazů
+        /// </summary>
+        /// <returns></returns>
         public LinksStorage Load()
         {
-            using (StreamReader sr = new StreamReader(path))
+            LinksStorage linksStorage = this;
+            try
             {
-                XmlSerializer xmls = new XmlSerializer(typeof(LinksStorage));
-                return xmls.Deserialize(sr) as LinksStorage;
+                using (StreamReader sr = new StreamReader(path))
+                {
+                    XmlSerializer xmls = new XmlSerializer(typeof(LinksStorage));
+                    linksStorage = xmls.Deserialize(sr) as LinksStorage;
+                }
             }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return linksStorage;
         }
 
+        /// <summary>
+        /// Uloží seznam odkazů
+        /// </summary>
         public void Save()
         {
-            using (StreamWriter sw = new StreamWriter(path))
+            try
             {
-                XmlSerializer xmls = new XmlSerializer(typeof(LinksStorage));
-                xmls.Serialize(sw, this);
+                using (StreamWriter sw = new StreamWriter(path))
+                {
+                    XmlSerializer xmls = new XmlSerializer(typeof(LinksStorage));
+                    xmls.Serialize(sw, this);
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
     }

@@ -40,19 +40,12 @@ namespace downloader3
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            var trayMenu = new System.Windows.Forms.ContextMenu();
-            var itemOpen = new System.Windows.Forms.MenuItem("Open", OnTrayOpen);
-            itemOpen.DefaultItem = true;
-
-            trayMenu.MenuItems.Add(itemOpen);
-            trayMenu.MenuItems.Add("Exit", OnTrayExit);
-
+        { 
             trayIcon = new System.Windows.Forms.NotifyIcon();
             trayIcon.Text = App.appName;
             trayIcon.Icon = Properties.Resources.favicon;
-            trayIcon.ContextMenu = trayMenu;
-            trayIcon.Visible = true;
+            trayIcon.BalloonTipClosed += TrayIcon_BalloonTipClosed;
+            trayIcon.BalloonTipClicked += TrayIcon_BalloonTipClicked;
 
             timer.Tick += new EventHandler(Timer_Tick);
             timer.Interval = new TimeSpan(0, 0, 1); //1 sekunda
@@ -83,6 +76,17 @@ namespace downloader3
             }
         }
 
+        private void TrayIcon_BalloonTipClicked(object sender, EventArgs e)
+        {
+            this.Focus();
+            trayIcon.Visible = false;
+        }
+
+        private void TrayIcon_BalloonTipClosed(object sender, EventArgs e)
+        {
+            trayIcon.Visible = false;
+        }
+
         private void Client_OnDownloadStateChanged(DownloadClient client, LvData item, States oldState, States newState)
         {
             if (newState != States.Error)
@@ -104,55 +108,29 @@ namespace downloader3
             item.Refresh();
             listView.Items.Refresh();
 
-            bool found = false;
-            int j = 0;
-            while (!found && j < listView.Items.Count)
-            {
-                LvData it = listView.Items[j] as LvData;
-                if (it.Client.State == States.Queue)
-                {
-                    it.Client.Start();
-                    found = true;
-                }
-                j++;
-            }
+            CheckQueue();
+            
 
             if (settings.ShowNotification)
+            {
+                trayIcon.Visible = true;
                 trayIcon.ShowBalloonTip(10, Lang.Translate("lang_error"), message, System.Windows.Forms.ToolTipIcon.Error);
+            }                
             if (settings.PlaySound) System.Media.SystemSounds.Hand.Play();
         }
 
         private void Client_OnDownloadCompleted(DownloadClient client, LvData item)
         {
-            item.LoadIcon();                     
+            item.LoadIcon();
 
-            bool found = false;
-            int j = 0;
-            while (!found && j < listView.Items.Count)
-            {
-                LvData it = listView.Items[j] as LvData;
-                if (it.Client.State == States.Queue)
-                {
-                    it.Client.Start();
-                    found = true;
-                }
-                j++;
-            }
+            CheckQueue();
 
             if (settings.ShowNotification)
+            {
+                trayIcon.Visible = true;
                 trayIcon.ShowBalloonTip(10, Lang.Translate("lang_download_completed"), client.FileName, System.Windows.Forms.ToolTipIcon.Info);
+            }
             if (settings.PlaySound) System.Media.SystemSounds.Asterisk.Play();
-        }
-
-
-        private void OnTrayOpen(object sender, EventArgs e)
-        {
-            this.Focus();
-        }
-
-        private void OnTrayExit(object sender, EventArgs e)
-        {
-            this.Close();
         }
 
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
@@ -167,11 +145,11 @@ namespace downloader3
                 {
                     LvData item = new LvData();
                     item.Client = new DownloadClient(url, dir, item);
+                    item.Client.SpeedLimit = settings.SpeedLimit;
                     item.Client.OnDownloadInit += Client_OnDownloadInit;
                     item.Client.OnDownloadCompleted += Client_OnDownloadCompleted;
                     item.Client.OnDownloadError += Client_OnDownloadError;
                     item.Client.OnDownloadStateChanged += Client_OnDownloadStateChanged;
-                    item.Client.SpeedLimit = settings.SpeedLimit;
 
                     if (DownloadClient.ActiveCount < settings.MaxDownloads) item.Client.Start();
                     else item.Client.Queue();
@@ -181,9 +159,9 @@ namespace downloader3
                 }
 
                 //přidáno zpoždění protože z nějakého důvodu ScrollIntoView nefunguje hned po přidání položky
-                Task.Delay(20).ContinueWith(t => {
-                    Dispatcher.Invoke(() => {
-                        //tento kód se za 20ms spustí asynchronně na jiném vlákně
+                Task.Delay(20).ContinueWith(t => { //počká 20ms bez blokování současného vlákna
+                    Dispatcher.Invoke(() => { 
+                        //po 20ms se kód spustí zpět na vlákně rozhraní
                         listView.Focus();
                         listView.SelectedIndex = listView.Items.Count - 1;
                         listView.ScrollIntoView(listView.SelectedItem);                        
@@ -194,6 +172,7 @@ namespace downloader3
 
         private void buttonResume_Click(object sender, RoutedEventArgs e)
         {
+            //seřadí položky podle pořadí v listView, protože jsou defaultně v pořadí, v jakém byly vybrány
             List<LvData> selectedList = new List<LvData>();
             foreach (LvData item in listView.Items) if (listView.SelectedItems.Contains(item)) selectedList.Add(item);
 
@@ -206,6 +185,8 @@ namespace downloader3
                     else item.Client.Queue();
                 }
             }
+
+            CheckQueue();
         }
 
         private void buttonPause_Click(object sender, RoutedEventArgs e)
@@ -219,6 +200,8 @@ namespace downloader3
                     item.Client.Pause();                    
                 }
             }
+
+            CheckQueue();
         }        
 
         private void buttonRemove_Click(object sender, RoutedEventArgs e)
@@ -237,6 +220,7 @@ namespace downloader3
                     if (removeWindow.deleteFile) item.Client.Cancel();
                     listView.Items.Remove(item);
                 }
+                CheckQueue();
             }
         }
 
@@ -251,6 +235,8 @@ namespace downloader3
                 listView.Items.Insert(index - 1, item);
                 listView.SelectedItems.Add(item);
             }
+
+            CheckQueue();
         }
 
         private void buttonDown_Click(object sender, RoutedEventArgs e)
@@ -264,6 +250,8 @@ namespace downloader3
                 listView.Items.Insert(index + 1, item);
                 listView.SelectedItems.Add(item);
             }
+
+            CheckQueue();
         }
 
         private void buttonSettings_Click(object sender, RoutedEventArgs e)
@@ -290,24 +278,28 @@ namespace downloader3
             }
         }
 
+        /// <summary>
+        /// Zkontroluje stav položek a zahájí stahovaní nebo je přidá do fronty.
+        /// </summary>
         private void CheckQueue()
-        {
-            int i = listView.Items.Count - 1;
-            while (DownloadClient.ActiveCount > settings.MaxDownloads && i >= 0)
-            {
-                LvData it = listView.Items[i] as LvData;
-                if (it.Client.State == States.Downloading || it.Client.State == States.Starting)
-                    it.Client.Queue();
-                i--;
-            }
+        {  
+            int count = 0;
 
-            i = 0;
-            while (DownloadClient.ActiveCount < settings.MaxDownloads && i < listView.Items.Count)
+            foreach (LvData item in listView.Items)
             {
-                LvData it = listView.Items[i] as LvData;
-                if (it.Client.State == States.Queue)
-                    it.Client.Start();
-                i++;
+                if (count < settings.MaxDownloads)
+                {
+                    if (item.Client.State == States.Downloading || item.Client.State == States.Starting)                    
+                        count++;
+
+                    else if (item.Client.State == States.Queue)
+                    {
+                        item.Client.Start();
+                        count++;
+                    }
+                }
+                else if (item.Client.State == States.Downloading || item.Client.State == States.Starting)
+                    item.Client.Queue();
             }
         }
 
@@ -406,6 +398,19 @@ namespace downloader3
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            if (DownloadClient.ActiveCount > 0)
+            {
+                if (MessageBox.Show(
+                    Lang.Translate("lang_active_download"),
+                    Lang.Translate("lang_confirm"),
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question) == MessageBoxResult.No)
+                {
+                    e.Cancel = true;
+                    return;
+                }                
+            }
+
             LinksStorage links = new LinksStorage();
 
             foreach (LvData item in listView.Items)
@@ -419,9 +424,9 @@ namespace downloader3
                 links.List.Add(link);
             }
             links.Save();
-            trayIcon.Dispose();            
+            trayIcon.Dispose();
             System.Environment.Exit(1);
-        }       
+        }
 
         private void ListViewItem_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {

@@ -21,29 +21,50 @@ namespace downloader3
         private static string path = Path.Combine(appdata, App.appName);
         private static string filepath = Path.Combine(path, "settings.xml");
 
+        /// <summary>
+        /// Načte nastavení
+        /// </summary>
+        /// <returns></returns>
         public SettingsStorage Load()
         {
             SettingsStorage storage = this;            
             try
             {
                 Directory.CreateDirectory(path);
+                
                 using (StreamReader sr = new StreamReader(filepath))
                 {
                     XmlSerializer xmls = new XmlSerializer(typeof(SettingsStorage));
                     storage = xmls.Deserialize(sr) as SettingsStorage;
-                }                                 
-            }
+                }                                                                
+            }          
             catch (FileNotFoundException ex)
             {
-                MessageBox.Show(ex.Message, ex.GetType().ToString());
+                Console.WriteLine(ex.Message);
             }
             catch (UnauthorizedAccessException ex)
             {
-                MessageBox.Show(ex.Message, ex.GetType().ToString());
+                Console.WriteLine(ex.Message);
+            }    
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine(ex.Message);
             }
+            catch (IOException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
             return storage;
         }
 
+        /// <summary>
+        /// Uloží nastavení
+        /// </summary>
         public void Save()
         {
             try
@@ -53,11 +74,19 @@ namespace downloader3
                     XmlSerializer xmls = new XmlSerializer(typeof(SettingsStorage));
                     xmls.Serialize(sw, this);
                 }
-            }
-            catch (FileNotFoundException ex)
+            }                 
+            catch (UnauthorizedAccessException ex)
             {
-                MessageBox.Show(ex.Message, ex.GetType().ToString());
-            }            
+                Console.WriteLine(ex.Message);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }

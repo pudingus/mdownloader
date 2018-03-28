@@ -38,7 +38,7 @@
 
     <system:String x:Key="lang_confirm_remove">Opravdu chcete odebrat tyto soubory ze seznamu?</system:String>
     <system:String x:Key="lang_also_delete">Smazat také z disku</system:String>
-    <system:String x:Key="lang_confirm_remove2">Potvrdit</system:String>
+    <system:String x:Key="lang_confirm">Potvrdit</system:String>
     <system:String x:Key="lang_canceled">Zrušeno</system:String>
     <system:String x:Key="lang_paused">Pozastaveno</system:String>
     <system:String x:Key="lang_completed">Dokončeno</system:String>
@@ -70,5 +70,7 @@
     <system:String x:Key="lang_unable_to_extract">Nepodařilo se extrahovat odkaz</system:String>
     <system:String x:Key="lang_download_completed">Stahování dokončeno</system:String>
 
+    <system:String x:Key="lang_active_download">Probíhá aktivní stahování. Opravdu chcete program ukončit?</system:String>
+    
 
 </ResourceDictionary>

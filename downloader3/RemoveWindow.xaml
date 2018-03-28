@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:downloader3"
         mc:Ignorable="d"
-        Title="{DynamicResource lang_confirm_remove2}" Height="162.08" Width="460.602" ResizeMode="NoResize" Icon="favicon.ico" Loaded="Window_Loaded" WindowStartupLocation="CenterOwner">
+        Title="{DynamicResource lang_confirm}" Height="162.08" Width="460.602" ResizeMode="NoResize" Icon="favicon.ico" Loaded="Window_Loaded" WindowStartupLocation="CenterOwner">
     <Grid>
         <Image x:Name="image" HorizontalAlignment="Left" Height="32" Margin="30,20,0,0" VerticalAlignment="Top" Width="32"/>
         <Label Content="{DynamicResource lang_confirm_remove}" HorizontalAlignment="Left" Margin="81,20,0,0" VerticalAlignment="Top"/>
