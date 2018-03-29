@@ -8,13 +8,31 @@ using System.Xml.Serialization;
 
 namespace downloader3
 {
+    /// <summary>
+    /// Poskytuje úložiště nastavení
+    /// </summary>
     [Serializable]
     public class SettingsStorage
     {
+        /// <summary>
+        /// Získá nebo nastaví výchozí rychlostní limit v bajtech za sekundu
+        /// </summary>
         public long SpeedLimit          { get; set; } = 0;
+        /// <summary>
+        /// Získá nebo nastaví současný jazyk
+        /// </summary>
         public string Language          { get; set; } = "cs-CZ";
+        /// <summary>
+        /// Získá nebo nastaví maximální počet současných stahování
+        /// </summary>
         public int MaxDownloads         { get; set; } = 2;
+        /// <summary>
+        /// Získá nebo nastaví možnost zobrazovat notifikaci po dokončení stahování
+        /// </summary>
         public bool ShowNotification    { get; set; } = true;
+        /// <summary>
+        /// Získá nebo nastaví možnost přehrát zvuk po dokončení stahování
+        /// </summary>
         public bool PlaySound           { get; set; } = true;
 
         private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

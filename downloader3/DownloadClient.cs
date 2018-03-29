@@ -14,23 +14,43 @@ using System.Linq;
 
 namespace downloader3
 {
-
+    /// <summary>
+    /// Specifikuje stav stahování
+    /// </summary>
     public enum States { Paused, Queue, Starting, Downloading, Canceled, Completed, Error }
+
+    /// <summary>
+    /// Specifikuje typ nebo poskytovatele odkazu
+    /// </summary>
     public enum Providers { DirectLink, Zippyshare, Openload }
 
-
+    /// <summary>
+    /// Má na starosti získávání dat ze serveru a ukládání na disk, poskytuje informace o průběhu a umožňuje ho ovládat.
+    /// </summary>
     public class DownloadClient
-    {
+    {        
         public delegate void DownloadError(DownloadClient client, LvData item, string message);
+        /// <summary>
+        /// Nastane když stahovaní přeruší chyba
+        /// </summary>
         public event DownloadError OnDownloadError;
 
         public delegate void DownloadCompleted(DownloadClient client, LvData item);
+        /// <summary>
+        /// Nastane když se stahování úspěšně dokončí
+        /// </summary>
         public event DownloadCompleted OnDownloadCompleted;
 
         public delegate void DownloadInit(DownloadClient client, LvData item);
+        /// <summary>
+        /// Nastane když se zahají stahování, po tom, co je soubor vytvořen na disku
+        /// </summary>
         public event DownloadInit OnDownloadInit;
 
         public delegate void DownloadStateChanged(DownloadClient client, LvData item, States oldState, States newState);
+        /// <summary>
+        /// Nastane když se změní stav stahování
+        /// </summary>
         public event DownloadStateChanged OnDownloadStateChanged;
 
          
@@ -82,8 +102,7 @@ namespace downloader3
 
         /// <summary>
         /// Získá stav současného stahování
-        /// </summary>
-        private States _state;
+        /// </summary>        
         public States State {
             get {
                 return _state;
@@ -111,6 +130,7 @@ namespace downloader3
                 }
             }
         }
+        private States _state;
 
         private LvData Item { get; set; }
 

@@ -16,10 +16,13 @@ using System.Windows.Shapes;
 namespace downloader3
 {
     /// <summary>
-    /// Interaction logic for AddHelpWindow.xaml
+    /// Představuje okno nápovědy pro <see cref="AddWindow"/>
     /// </summary>
     public partial class AddHelpWindow : Window
     {
+        /// <summary>
+        /// Vytvoří novou instanci třídy <see cref="AddHelpWindow"/>
+        /// </summary>
         public AddHelpWindow()
         {
             InitializeComponent();

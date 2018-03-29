@@ -12,16 +12,23 @@ using System.Collections.Generic;
 namespace downloader3
 {
     /// <summary>
-    /// Interakční logika pro LinksWindow.xaml
+    /// Představuje okno pro přidání odkazů
     /// </summary>
     public partial class AddWindow : Window
     {
+        /// <summary>
+        /// Vytvoří novou instanci třídy <see cref="AddWindow"/>
+        /// </summary>
         public AddWindow()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Představuje seznam zadaných odkazů bez nadbytečných mezer nebo prázdných řádků
+        /// </summary>
         public List<string> urlList;
+
         private List<string> badLines;        
 
         private void buttonSave_Click(object sender, RoutedEventArgs e)

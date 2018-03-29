@@ -6,10 +6,13 @@ using System.Windows.Input;
 namespace downloader3
 {
     /// <summary>
-    /// Interaction logic for BandwidthWindow.xaml
+    /// Představuje okno pro nastavení rychlostního limitu
     /// </summary>
     public partial class BandwidthWindow : Window
     {            
+        /// <summary>
+        /// Vytvoří novou instanci třídy <see cref="BandwidthWindow"/>
+        /// </summary>
         public BandwidthWindow()
         {
             InitializeComponent();

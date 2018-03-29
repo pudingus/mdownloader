@@ -8,8 +8,15 @@ using System.Windows;
 
 namespace downloader3
 {
+    /// <summary>
+    /// Poskytuje možnost měnit jazyk programu a překládat
+    /// </summary>
     public class Lang
     {
+        /// <summary>
+        /// Nastaví jazyk programu
+        /// </summary>
+        /// <param name="culture"></param>
         public static void SetLanguage(string culture)
         {
             if (String.IsNullOrEmpty(culture)) return;
@@ -30,6 +37,11 @@ namespace downloader3
             }            
         }
 
+        /// <summary>
+        /// Vyhledá zadaný prostředek v přostředcích aplikace a vrátí odpovídající řetězec
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public static string Translate(string resource)
         {
             string result = (string)Application.Current.TryFindResource(resource);

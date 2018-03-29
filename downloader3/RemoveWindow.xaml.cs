@@ -15,12 +15,18 @@ using System.Windows.Shapes;
 namespace downloader3
 {
     /// <summary>
-    /// Interaction logic for RemoveWindow.xaml
+    /// Představuje okno pro potvrzení odebrání položek
     /// </summary>
     public partial class RemoveWindow : Window
     {
-        public bool deleteFile = false;
+        /// <summary>
+        /// Udává jestli se mají soubory smazat také z disku
+        /// </summary>
+        public bool deleteFiles = false;
 
+        /// <summary>
+        /// Vytvoří novou instanci třídy <see cref="RemoveWindow"/>
+        /// </summary>
         public RemoveWindow()
         {
             InitializeComponent();
@@ -31,14 +37,12 @@ namespace downloader3
             image.Source = Imaging.CreateBitmapSourceFromHIcon(
             System.Drawing.SystemIcons.Warning.Handle,
             Int32Rect.Empty,
-            BitmapSizeOptions.FromEmptyOptions());
-
-            
+            BitmapSizeOptions.FromEmptyOptions());            
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)
         {
-            if (checkbox.IsChecked == true) deleteFile = true;
+            if (checkbox.IsChecked == true) deleteFiles = true;
             DialogResult = true;
         }
 

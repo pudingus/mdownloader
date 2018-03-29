@@ -8,7 +8,9 @@ using System.Xml.Serialization;
 
 namespace downloader3
 {
-    
+    /// <summary>
+    /// Představuje uložená data pro jednotlivou položku
+    /// </summary>
     [Serializable]
     public class Link
     {        
@@ -20,9 +22,15 @@ namespace downloader3
         public bool Completed { get; set; }
     }
 
+    /// <summary>
+    /// Představuje úložiště odkazů
+    /// </summary>
     [Serializable]
     public class LinksStorage
     {
+        /// <summary>
+        /// Představuje seznam odkazů
+        /// </summary>
         public List<Link> List = new List<Link>();
 
         private static string filename = "links.xml";

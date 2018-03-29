@@ -12,6 +12,9 @@ using System.Windows.Media.Imaging;
 
 namespace downloader3
 {
+    /// <summary>
+    /// Představuje data jednotlivé položky v listView
+    /// </summary>
     public class LvData
     {
         public ImageSource Icon { get; set; }
@@ -24,6 +27,9 @@ namespace downloader3
         public DownloadClient Client { get; set; }
         public string ErrorMsg { get; set; }
 
+        /// <summary>
+        /// Načte ikonu souboru podle jeho typu
+        /// </summary>
         public void LoadIcon()
         {
             if (Client == null) return;
@@ -43,6 +49,9 @@ namespace downloader3
             Icon = bmpSrc;
         }
 
+        /// <summary>
+        /// Obnoví data položky
+        /// </summary>
         public void Refresh()
         {
             if (Client.FileName == "") Name = Client.Url;

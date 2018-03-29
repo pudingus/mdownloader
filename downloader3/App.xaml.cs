@@ -10,6 +10,9 @@ namespace downloader3
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// Konstanta s názvem programu
+        /// </summary>
         public const string appName = "mDownloader";
     }
 }

@@ -23,16 +23,22 @@ using System.Threading.Tasks;
 namespace downloader3
 {
     /// <summary>
-    /// Interakční logika pro MainWindow.xaml
+    /// Představuje hlavní okno programu
     /// </summary>
     public partial class MainWindow : Window
     {        
+        /// <summary>
+        /// Představuje instanci <see cref="SettingsStorage"/> se současným nastavením programu
+        /// </summary>
         public SettingsStorage settings = new SettingsStorage();
         private DispatcherTimer timer = new DispatcherTimer();
         private LvData lastItem;        
 
         System.Windows.Forms.NotifyIcon trayIcon;
 
+        /// <summary>
+        /// Vytvoří novou instanci třídy <see cref="MainWindow"/>
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
@@ -217,7 +223,7 @@ namespace downloader3
 
                 foreach (LvData item in selectedList)
                 {
-                    if (removeWindow.deleteFile) item.Client.Cancel();
+                    if (removeWindow.deleteFiles) item.Client.Cancel();
                     listView.Items.Remove(item);
                 }
                 CheckQueue();
@@ -363,9 +369,8 @@ namespace downloader3
 
             if (item.Client.FileName == "") return;
 
-            RenameWindow renameWindow = new RenameWindow();
+            RenameWindow renameWindow = new RenameWindow(item);
             renameWindow.Owner = this;
-            renameWindow.item = item;
 
             if (renameWindow.ShowDialog() == true)
             {

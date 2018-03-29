@@ -5,11 +5,13 @@ using System.Windows.Input;
 namespace downloader3
 {
     /// <summary>
-    /// Interaction logic for SettingsWindow.xaml
+    /// Představuje okno s nastavením programu
     /// </summary>
     public partial class SettingsWindow : Window
     {
-        private string _lang;
+        /// <summary>
+        /// Získá nebo nastaví jazyk a vybere příslušnou položku v ComboBoxu
+        /// </summary>
         public string Lang {
             get {
                 if (langSelection.SelectedIndex == 0) _lang = "cs-CZ";
@@ -22,7 +24,11 @@ namespace downloader3
                 else if (_lang == "en-US") langSelection.SelectedIndex = 1;
             }
         }
+        private string _lang;
 
+        /// <summary>
+        /// Vytvoří novou instanci třídy <see cref="SettingsWindow"/>
+        /// </summary>
         public SettingsWindow()
         {
             InitializeComponent();

@@ -6,8 +6,16 @@ using System.Text;
 
 namespace downloader3
 {
+    /// <summary>
+    /// Poskytuje různé statické metody
+    /// </summary>
     public static class Util
     {
+        /// <summary>
+        /// Ověřuje jestli zadaná url je platná
+        /// </summary>
+        /// <param name="url">Url adresa</param>
+        /// <returns></returns>
         public static bool IsValidURL(string url)
         {
             Uri uriResult;
@@ -15,6 +23,11 @@ namespace downloader3
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
         }
 
+        /// <summary>
+        /// Ověřuje jestli zadaná cesta je platná
+        /// </summary>
+        /// <param name="path">Cesta</param>
+        /// <returns></returns>
         public static bool IsValidPath(string path)
         {
             bool valid = false;
@@ -33,6 +46,11 @@ namespace downloader3
             return valid;
         }
 
+        /// <summary>
+        /// Převede bajty do čitelného formátu a vrátí řetězec
+        /// </summary>
+        /// <param name="bytes">Bajty</param>
+        /// <returns></returns>
         public static string ConvertBytes(long bytes)
         {
             double KB = Math.Pow(1024, 1);
@@ -47,6 +65,11 @@ namespace downloader3
             else return "unk";
         }
 
+        /// <summary>
+        /// Převede sekundy do čitelného formátu a vrátí řetězec
+        /// </summary>
+        /// <param name="sec">Sekundy</param>
+        /// <returns></returns>
         public static string ConvertTime(long sec)
         {
             string str = " ";
