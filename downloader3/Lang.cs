@@ -11,7 +11,7 @@ namespace downloader3
     /// <summary>
     /// Poskytuje možnost měnit jazyk programu a překládat
     /// </summary>
-    public class Lang
+    public static class Lang
     {
         /// <summary>
         /// Nastaví jazyk programu
@@ -47,7 +47,7 @@ namespace downloader3
             string result = (string)Application.Current.TryFindResource(resource);
             if (result == null)
             {
-                MessageBox.Show("Language resource \"" + resource + "\" is invalid", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Language resource \"{resource}\" is invalid", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return resource;
             }
             return result;

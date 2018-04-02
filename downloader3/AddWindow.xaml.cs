@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Specialized;
 using System.IO;
 using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace downloader3
 {
@@ -27,16 +28,14 @@ namespace downloader3
         /// <summary>
         /// Představuje seznam zadaných odkazů bez nadbytečných mezer nebo prázdných řádků
         /// </summary>
-        public List<string> urlList;
-
-        private List<string> badLines;        
+        public List<string> UrlList { get; private set; }      
 
         private void buttonSave_Click(object sender, RoutedEventArgs e)
         {
             if (Util.IsValidPath(pathTextBox.Text))
             {                
-                urlList = new List<string>();
-                badLines = new List<string>();
+                UrlList = new List<string>();
+                List<string> badLines = new List<string>();
 
                 for (int i = 0; i < linksTextBox.LineCount; i++)
                 {
@@ -45,7 +44,7 @@ namespace downloader3
                     if (Util.IsValidURL(url))
                     {
                         url = Regex.Replace(url, @"\r\n?|\n", "");
-                        urlList.Add(url);
+                        UrlList.Add(url);
                     }
                     else if (!String.IsNullOrWhiteSpace(url)) badLines.Add(url);                    
                 }
@@ -62,7 +61,7 @@ namespace downloader3
                         }
                     }
                 }
-                else if (urlList.Count < 1)
+                else if (UrlList.Count < 1)
                 {
                     MessageBox.Show(Lang.Translate("lang_no_valid_links"), Lang.Translate("lang_error"), MessageBoxButton.OK, MessageBoxImage.Error);
                 }

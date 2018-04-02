@@ -22,7 +22,7 @@ namespace downloader3
         /// <summary>
         /// Udává jestli se mají soubory smazat také z disku
         /// </summary>
-        public bool deleteFiles = false;
+        public bool DeleteFiles { get; private set; } = false;
 
         /// <summary>
         /// Vytvoří novou instanci třídy <see cref="RemoveWindow"/>
@@ -35,14 +35,16 @@ namespace downloader3
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             image.Source = Imaging.CreateBitmapSourceFromHIcon(
-            System.Drawing.SystemIcons.Warning.Handle,
-            Int32Rect.Empty,
-            BitmapSizeOptions.FromEmptyOptions());            
+                System.Drawing.SystemIcons.Warning.Handle,
+                Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());            
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)
         {
-            if (checkbox.IsChecked == true) deleteFiles = true;
+            //normálně by stačilo do DeleteFiles uložit hodnotu IsChecked,
+            //jenže IsChecked je typu "bool?", takže může být i null
+            if (checkbox.IsChecked == true) DeleteFiles = true;
             DialogResult = true;
         }
 

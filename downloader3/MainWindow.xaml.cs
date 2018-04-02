@@ -26,13 +26,13 @@ namespace downloader3
     /// Představuje hlavní okno programu
     /// </summary>
     public partial class MainWindow : Window
-    {        
+    {
         /// <summary>
         /// Představuje instanci <see cref="SettingsStorage"/> se současným nastavením programu
         /// </summary>
         public SettingsStorage settings = new SettingsStorage();
         private DispatcherTimer timer = new DispatcherTimer();
-        private LvData lastItem;        
+        private LvData lastItem;
 
         System.Windows.Forms.NotifyIcon trayIcon;
 
@@ -46,7 +46,7 @@ namespace downloader3
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
-        { 
+        {
             trayIcon = new System.Windows.Forms.NotifyIcon();
             trayIcon.Text = App.appName;
             trayIcon.Icon = Properties.Resources.favicon;
@@ -84,8 +84,10 @@ namespace downloader3
 
         private void TrayIcon_BalloonTipClicked(object sender, EventArgs e)
         {
-            this.Focus();
             trayIcon.Visible = false;
+            if (WindowState == WindowState.Minimized)
+                WindowState = WindowState.Normal;
+            Activate();
         }
 
         private void TrayIcon_BalloonTipClosed(object sender, EventArgs e)
@@ -100,28 +102,28 @@ namespace downloader3
                 item.Refresh();
                 listView.Items.Refresh();
                 if (oldState == States.Error) item.ErrorMsg = null;
-            }            
+            }
         }
 
         private void Client_OnDownloadInit(DownloadClient client, LvData item)
         {
-            item.LoadIcon();       
+            item.LoadIcon();
         }
 
         private void Client_OnDownloadError(DownloadClient client, LvData item, string message)
-        {            
+        {
             item.ErrorMsg = message;
             item.Refresh();
             listView.Items.Refresh();
 
             CheckQueue();
-            
+
 
             if (settings.ShowNotification)
             {
                 trayIcon.Visible = true;
                 trayIcon.ShowBalloonTip(10, Lang.Translate("lang_error"), message, System.Windows.Forms.ToolTipIcon.Error);
-            }                
+            }
             if (settings.PlaySound) System.Media.SystemSounds.Hand.Play();
         }
 
@@ -141,13 +143,12 @@ namespace downloader3
 
         private void buttonAdd_Click(object sender, RoutedEventArgs e)
         {
-            AddWindow linksWindows = new AddWindow();
-            linksWindows.Owner = this;
-            
-            if (linksWindows.ShowDialog() == true)
+            AddWindow addWindow = new AddWindow();
+            addWindow.Owner = this;
+            if (addWindow.ShowDialog() == true)
             {
-                string dir = linksWindows.pathTextBox.Text;
-                foreach (string url in linksWindows.urlList)
+                string dir = addWindow.pathTextBox.Text;
+                foreach (string url in addWindow.UrlList)
                 {
                     LvData item = new LvData();
                     item.Client = new DownloadClient(url, dir, item);
@@ -165,15 +166,17 @@ namespace downloader3
                 }
 
                 //přidáno zpoždění protože z nějakého důvodu ScrollIntoView nefunguje hned po přidání položky
-                Task.Delay(20).ContinueWith(t => { //počká 20ms bez blokování současného vlákna
-                    Dispatcher.Invoke(() => { 
+                Task.Delay(20).ContinueWith(t =>
+                { //počká 20ms bez blokování současného vlákna
+                    Dispatcher.Invoke(() =>
+                    {
                         //po 20ms se kód spustí zpět na vlákně rozhraní
                         listView.Focus();
                         listView.SelectedIndex = listView.Items.Count - 1;
-                        listView.ScrollIntoView(listView.SelectedItem);                        
-                    }); 
+                        listView.ScrollIntoView(listView.SelectedItem);
+                    });
                 });
-            }              
+            }
         }
 
         private void buttonResume_Click(object sender, RoutedEventArgs e)
@@ -184,10 +187,10 @@ namespace downloader3
 
             foreach (LvData item in selectedList)
             {
-                if (item.Client.State == States.Paused || 
+                if (item.Client.State == States.Paused ||
                     item.Client.State == States.Error)
                 {
-                    if (DownloadClient.ActiveCount < settings.MaxDownloads) item.Client.Start();                    
+                    if (DownloadClient.ActiveCount < settings.MaxDownloads) item.Client.Start();
                     else item.Client.Queue();
                 }
             }
@@ -196,24 +199,24 @@ namespace downloader3
         }
 
         private void buttonPause_Click(object sender, RoutedEventArgs e)
-        {  
+        {
             foreach (LvData item in listView.SelectedItems)
             {
-                if (item.Client.State == States.Downloading || 
+                if (item.Client.State == States.Downloading ||
                     item.Client.State == States.Starting ||
                     item.Client.State == States.Queue)
                 {
-                    item.Client.Pause();                    
+                    item.Client.Pause();
                 }
             }
 
             CheckQueue();
-        }        
+        }
 
         private void buttonRemove_Click(object sender, RoutedEventArgs e)
         {
             if (listView.SelectedIndex == -1) return;
-            
+
             RemoveWindow removeWindow = new RemoveWindow();
             removeWindow.Owner = this;
             if (removeWindow.ShowDialog() == true)
@@ -223,7 +226,7 @@ namespace downloader3
 
                 foreach (LvData item in selectedList)
                 {
-                    if (removeWindow.deleteFiles) item.Client.Cancel();
+                    if (removeWindow.DeleteFiles) item.Client.Cancel();
                     listView.Items.Remove(item);
                 }
                 CheckQueue();
@@ -231,7 +234,7 @@ namespace downloader3
         }
 
         private void buttonUp_Click(object sender, RoutedEventArgs e)
-        {         
+        {
             int index = listView.SelectedIndex;
 
             if (index > 0)
@@ -288,14 +291,14 @@ namespace downloader3
         /// Zkontroluje stav položek a zahájí stahovaní nebo je přidá do fronty.
         /// </summary>
         private void CheckQueue()
-        {  
+        {
             int count = 0;
 
             foreach (LvData item in listView.Items)
             {
                 if (count < settings.MaxDownloads)
                 {
-                    if (item.Client.State == States.Downloading || item.Client.State == States.Starting)                    
+                    if (item.Client.State == States.Downloading || item.Client.State == States.Starting)
                         count++;
 
                     else if (item.Client.State == States.Queue)
@@ -310,7 +313,7 @@ namespace downloader3
         }
 
         private void Timer_Tick(object sender, EventArgs e) //1 sekunda
-        {  
+        {
             long totalSpeed = 0;
 
             if (DownloadClient.ActiveCount > 0)
@@ -323,9 +326,9 @@ namespace downloader3
                 listView.Items.Refresh();
             }
 
-            Title = App.appName + " - " + 
-                DownloadClient.ActiveCount + "/" + 
-                listView.Items.Count + " - " + 
+            Title = App.appName + " - " +
+                DownloadClient.ActiveCount + "/" +
+                listView.Items.Count + " - " +
                 Util.ConvertBytes(totalSpeed) + "/s";
         }
 
@@ -352,15 +355,15 @@ namespace downloader3
         private void MenuItemFolder_Click(object sender, RoutedEventArgs e) //Otevřít ve složce
         {
             LvData item = lastItem;
-            
+
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.FileName = "explorer.exe";
-            string path = Path.Combine(item.Client.Directory, item.Client.FileName);
+            string path = item.Client.FullPath;
             if (File.Exists(path)) startInfo.Arguments = "/select, " + path;
             else startInfo.Arguments = item.Client.Directory;
             process.StartInfo = startInfo;
-            process.Start();            
+            process.Start();
         }
 
         private void MenuItemRename_Click(object sender, RoutedEventArgs e) //Přejmenovat
@@ -399,7 +402,32 @@ namespace downloader3
             LvData item = lastItem;
 
             Clipboard.SetText(item.Client.Url);
-        }     
+        }
+
+        private void ListViewItem_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            ListViewItem cItem = sender as ListViewItem;
+            LvData item = cItem.DataContext as LvData;
+            lastItem = item;
+
+            if (cItem != null && item != null)
+            {
+                //zakáže nebo povolí položku "Otevřít" podle toho, jestli soubor existuje
+                MenuItem menuItem = cItem.ContextMenu.Items[0] as MenuItem;
+                if (File.Exists(item.Client.FullPath)) menuItem.IsEnabled = true;
+                else menuItem.IsEnabled = false;
+
+                //zakáže nebo povolí položku "Otevřít ve složce" podle toho, jestli složka existuje
+                menuItem = cItem.ContextMenu.Items[1] as MenuItem;
+                if (Directory.Exists(item.Client.Directory)) menuItem.IsEnabled = true;
+                else menuItem.IsEnabled = false;
+
+                //zakáže položku "Přejmenovat", pokud finální jméno souboru ještě nebylo získáno
+                menuItem = cItem.ContextMenu.Items[2] as MenuItem;
+                if (item.Client.FileName == "") menuItem.IsEnabled = false;
+                else menuItem.IsEnabled = true;
+            }
+        }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
@@ -413,7 +441,7 @@ namespace downloader3
                 {
                     e.Cancel = true;
                     return;
-                }                
+                }
             }
 
             LinksStorage links = new LinksStorage();
@@ -432,25 +460,5 @@ namespace downloader3
             trayIcon.Dispose();
             System.Environment.Exit(1);
         }
-
-        private void ListViewItem_ContextMenuOpening(object sender, ContextMenuEventArgs e)
-        {
-            ListViewItem cItem = sender as ListViewItem;
-            LvData item = cItem.DataContext as LvData;
-            lastItem = item;
-
-            if (cItem != null && item != null)
-            {
-                //zakáže nebo povolí položku "Otevřít" podle toho, jestli soubor existuje
-                MenuItem menuItem = cItem.ContextMenu.Items[0] as MenuItem;
-                if (File.Exists(item.Client.FullPath)) menuItem.IsEnabled = true;
-                else menuItem.IsEnabled = false;
-
-                //zakáže položku "Přejmenovat", pokud finální jméno souboru ještě nebylo získáno
-                menuItem = cItem.ContextMenu.Items[2] as MenuItem;
-                if (item.Client.FileName == "") menuItem.IsEnabled = false;
-                else menuItem.IsEnabled = true;
-            }
-        }
-    }    
+    }
 }

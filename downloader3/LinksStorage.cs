@@ -19,7 +19,6 @@ namespace downloader3
         public string Url { get; set; }
         public long TotalBytes { get; set; }
         public long SpeedLimit { get; set; }
-        public bool Completed { get; set; }
     }
 
     /// <summary>

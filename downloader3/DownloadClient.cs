@@ -30,24 +30,27 @@ namespace downloader3
     public class DownloadClient
     {        
         public delegate void DownloadError(DownloadClient client, LvData item, string message);
+        public delegate void DownloadCompleted(DownloadClient client, LvData item);
+
+        public delegate void DownloadInit(DownloadClient client, LvData item);
+
+        public delegate void DownloadStateChanged(DownloadClient client, LvData item, States oldState, States newState);
+
         /// <summary>
         /// Nastane když stahovaní přeruší chyba
         /// </summary>
         public event DownloadError OnDownloadError;
-
-        public delegate void DownloadCompleted(DownloadClient client, LvData item);
+       
         /// <summary>
         /// Nastane když se stahování úspěšně dokončí
         /// </summary>
         public event DownloadCompleted OnDownloadCompleted;
-
-        public delegate void DownloadInit(DownloadClient client, LvData item);
+        
         /// <summary>
         /// Nastane když se zahají stahování, po tom, co je soubor vytvořen na disku
         /// </summary>
         public event DownloadInit OnDownloadInit;
-
-        public delegate void DownloadStateChanged(DownloadClient client, LvData item, States oldState, States newState);
+        
         /// <summary>
         /// Nastane když se změní stav stahování
         /// </summary>
@@ -134,7 +137,6 @@ namespace downloader3
 
         private LvData Item { get; set; }
 
-
         private Thread downloadThread; 
         private int processed = 0;
         private DispatcherTimer timer = new DispatcherTimer();
@@ -145,13 +147,30 @@ namespace downloader3
         private DispatcherTimer wbTimer = new DispatcherTimer();
         private Providers provider;
 
-        private const int chunkSize = 1024;
+        private const int bufferSize = 1024;
         private const int maxRenameCount = 999;
         private const int requestTimeout = 6000;    //v milisekundách
         private const int browserTimeout = 6000;
         private const int updateInterval = 1000;        
         private const int pauseSleep = 100;
         private const int speedlimitSleep = 200;
+
+        /// <summary>
+        /// Vytvoří novou instanci třídy <see cref="DownloadClient"/>.
+        /// </summary>
+        /// <param name="url">Odkaz ze kterého se soubor stáhne.</param>
+        /// <param name="directory">Úplná cesta ke složce, kde se soubor uloží.</param>
+        /// <param name="item">Reference na položku v listview, která obsahuje tento objekt.</param>
+        public DownloadClient(string url, string directory, LvData item)
+        {
+            append = false;
+            Url = WebUtility.UrlDecode(url);
+            Directory = directory;
+            Item = item;
+
+            timer.Tick += Timer_Tick;
+            timer.Interval = new TimeSpan(0, 0, 0, 0, updateInterval);
+        }
 
 
         /// <summary>
@@ -162,10 +181,11 @@ namespace downloader3
         /// <param name="item">Reference na položku v listview, která obsahuje tento objekt.</param>
         /// <param name="cachedTotalBytes">Očekávaná celková velikost soubor. Slouží ke kontrole, jestli nebyl soubor na serveru změněn.</param>
         /// <param name="cachedFileName">Název souboru, na který se má navázat</param>
-        public DownloadClient(string url, string directory, LvData item, long cachedTotalBytes, string cachedFileName)
+        public DownloadClient(string url, string directory, LvData item,
+                              long cachedTotalBytes, string cachedFileName)
         {
             append = true;
-            Url = url;
+            Url = WebUtility.UrlDecode(url);
             Directory = directory;
             TotalBytes = cachedTotalBytes;
             Item = item;
@@ -179,28 +199,10 @@ namespace downloader3
                 FileInfo file = new FileInfo(FullPath);
                 BytesDownloaded = file.Length;
             }
-
             if (BytesDownloaded == TotalBytes && TotalBytes > 0) State = States.Completed;
             else State = States.Paused;
         }
-
-        /// <summary>
-        /// Vytvoří novou instanci třídy <see cref="DownloadClient"/>.
-        /// </summary>
-        /// <param name="url">Odkaz ze kterého se soubor stáhne.</param>
-        /// <param name="directory">Úplná cesta ke složce, kde se soubor uloží.</param>
-        /// <param name="item">Reference na položku v listview, která obsahuje tento objekt.</param>
-        public DownloadClient(string url, string directory, LvData item)
-        {    
-            append = false;
-            Url = url;
-            Directory = directory;
-            Item = item;
-
-            timer.Tick += Timer_Tick;
-            timer.Interval = new TimeSpan(0, 0, 0, 0, updateInterval);
-        }        
-
+        
         /// <summary>
         /// Zahájí stahování bez blokování současného vlákna
         /// </summary>
@@ -230,7 +232,7 @@ namespace downloader3
                 }
             }             
 
-            if (provider == Providers.DirectLink) //pokud se jedná o přímých odkaz, rovnou se vytvoří vlákno a spustí stahování
+            if (provider == Providers.DirectLink) //pokud se jedná o přímý odkaz, rovnou se vytvoří vlákno a spustí stahování
             {
                 if (downloadThread == null || !downloadThread.IsAlive)
                 {
@@ -253,16 +255,14 @@ namespace downloader3
         }
 
         /// <summary>
-        /// Zruší současné stahování a smaže soubor, pokud existuje.
+        /// Zruší současné stahování a smaže soubor.
         /// </summary>
         public void Cancel()
         {
             State = States.Canceled;
-            if (downloadThread == null || !downloadThread.IsAlive)
-            {
-                if (File.Exists(Path.Combine(Directory, FileName)))
-                    File.Delete(Path.Combine(Directory, FileName));
-            }
+            if (downloadThread == null || !downloadThread.IsAlive)   
+                if (File.Exists(FullPath))
+                    File.Delete(FullPath);            
         }
 
         /// <summary>
@@ -282,7 +282,7 @@ namespace downloader3
         /// Zařadí stahování do fronty
         /// </summary>
         /// <remarks>
-        /// Funguje podobně jako pozastavení. Slouží pro rozlišení, jestli bylo stahování přerušeno uživatelem
+        /// Funguje podobně jako pozastavení. Slouží pro rozlišení stavu, jestli bylo stahování přerušeno uživatelem
         /// nebo programem, který spravuje položky ve frontě.
         /// </remarks>
         public void Queue()
@@ -310,11 +310,12 @@ namespace downloader3
                 if (File.Exists(oldPath)) File.Move(oldPath, newPath);
                 if (downloadThread != null)
                 {
-                    if (downloadThread.IsAlive) fs = new FileStream(newPath, FileMode.Append, FileAccess.Write, FileShare.Read);
+                    if (downloadThread.IsAlive)
+                        fs = new FileStream(newPath, FileMode.Append, FileAccess.Write, FileShare.Read);
                 }
                 FileName = newName;
             }
-        }        
+        }
 
         //Nastane po úplném načtení stránky
         private void WebBrowser_DocumentCompleted(object sender, System.Windows.Forms.WebBrowserDocumentCompletedEventArgs e)
@@ -334,17 +335,7 @@ namespace downloader3
                 ResolveLink();
                 webBrowser.Dispose();
             }
-        }
-
-        //Zkratka pro vyvolání údalosti při chybě
-        private void CallError(string message)
-        {
-            State = States.Error;
-            operation.Post(new SendOrPostCallback(delegate (object state)
-            {
-                OnDownloadError?.Invoke(this, Item, message);
-            }), null);
-        }
+        }        
 
         //Má na starosti extrakci přímých odkazů z podporovaných stránek
         private void ResolveLink()
@@ -362,7 +353,6 @@ namespace downloader3
                     CallError(Lang.Translate("lang_unable_to_extract"));
                     return;
                 }
-
             }
             else if (provider == Providers.Openload)
             {
@@ -383,7 +373,17 @@ namespace downloader3
 
             downloadThread = new Thread(DownloadWorker);
             downloadThread.Start();
-        }                
+        }
+
+        //Zkratka pro vyvolání údalosti při chybě
+        private void CallError(string message)
+        {
+            State = States.Error;
+            operation.Post(new SendOrPostCallback(delegate (object state)
+            {
+                OnDownloadError?.Invoke(this, Item, message);
+            }), null);
+        }
 
         //Obsluhuje čtení dat ze serveru a zápis na disk. Běží v samostatném vlákně.
         private void DownloadWorker()
@@ -409,19 +409,23 @@ namespace downloader3
                 
                 response = (HttpWebResponse)request.GetResponse();
 
-                //když je FileName prázdný, ještě jsme nezískali jméno ze serveru, jinak použít stávající
+                //když je FileName prázdný, ještě nebyl získan název souboru ze serveru, jinak se použije stávající
                 if (FileName == "")
                 {                    
                     string header = response.Headers["Content-Disposition"];
                     if (header != null)
                     {
                         string s = header.Replace("attachment; ", "").Replace("attachment;", "").Replace("filename=", "").Replace("filename*=UTF-8''", "").Replace("\"", "");
-                        FileName = WebUtility.UrlDecode(s);                        
+
+                        // z:  form%c3%a1ln%c3%ad%20%c3%baprava%20podle%20norem.docx
+                        // na: formální úprava podle norem.docx
+
+                        FileName = WebUtility.UrlDecode(s);
                     }
                     else
                     {
                         Uri uri = new Uri(Url);
-                        FileName = Path.GetFileName(uri.LocalPath);                        
+                        FileName = Path.GetFileName(uri.LocalPath);
                     }
 
                     //pokud již existuje soubor se stejným jménem, přidá se číslo               
@@ -460,14 +464,13 @@ namespace downloader3
                         OnDownloadInit?.Invoke(this, Item);
                     }), null);
 
-                    byte[] read = new byte[chunkSize];
-                    int count;                    
-
-                    while ((count = receiveStream.Read(read, 0, chunkSize)) > 0 && State != States.Canceled) //dokud není přečten celý stream
+                    byte[] buffer = new byte[bufferSize];
+                    int receivedCount;                    
+                    while ((receivedCount = receiveStream.Read(buffer, 0, bufferSize)) > 0 && State != States.Canceled) //dokud není přečten celý stream
                     {   
-                        fs.Write(read, 0, count);
-                        BytesDownloaded += count;
-                        processed += count;
+                        fs.Write(buffer, 0, receivedCount);
+                        BytesDownloaded += receivedCount;
+                        processed += receivedCount;
 
                         while (State == States.Paused || State == States.Queue) Thread.Sleep(pauseSleep);
                         if (State == States.Starting) State = States.Downloading;

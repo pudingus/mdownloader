@@ -25,19 +25,26 @@ namespace downloader3
         private void Rename()
         {
             string filename = textBox.Text;
-            string path = Path.Combine(_item.Directory, textBox.Text);
-
-            if (Util.IsValidPath(path))
+            if (filename == _item.Name)
             {
-                if (!File.Exists(path))
-                {
-                    _item.Client.Rename(textBox.Text);
-
-                    DialogResult = true;
-                }
-                else MessageBox.Show("Soubor už existuje", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Close();
             }
-            else MessageBox.Show("Neplatný název souboru", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            else
+            {
+                string path = Path.Combine(_item.Directory, textBox.Text);
+
+                if (Util.IsValidPath(path))
+                {
+                    if (!File.Exists(path))
+                    {
+                        _item.Client.Rename(textBox.Text);
+
+                        DialogResult = true;
+                    }
+                    else MessageBox.Show(Lang.Translate("lang_file_exists"), Lang.Translate("lang_error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                else MessageBox.Show(Lang.Translate("lang_invalid_path"), Lang.Translate("lang_error"), MessageBoxButton.OK, MessageBoxImage.Error);
+            }            
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)

@@ -5,12 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:downloader3"
         mc:Ignorable="d"
-        Title="{DynamicResource lang_confirm}" Height="162.08" Width="460.602" ResizeMode="NoResize" Icon="favicon.ico" Loaded="Window_Loaded" WindowStartupLocation="CenterOwner">
+        Title="{DynamicResource lang_confirm}" Height="162.08" Width="460.602" ResizeMode="NoResize" Loaded="Window_Loaded" WindowStartupLocation="CenterOwner">
     <Grid>
         <Image x:Name="image" HorizontalAlignment="Left" Height="32" Margin="30,20,0,0" VerticalAlignment="Top" Width="32"/>
         <Label Content="{DynamicResource lang_confirm_remove}" HorizontalAlignment="Left" Margin="81,20,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="checkbox" Content="{DynamicResource lang_also_delete}" HorizontalAlignment="Left" Margin="93,51,0,0" VerticalAlignment="Top"/>
-        <Button x:Name="buttonOK" Content="{DynamicResource lang_ok}" HorizontalAlignment="Right" Margin="0,0,90,10" VerticalAlignment="Bottom" Width="75" Click="buttonOK_Click"/>
+        <Button x:Name="buttonOK" Content="{DynamicResource lang_ok}" HorizontalAlignment="Right" Margin="0,0,90,10" VerticalAlignment="Bottom" Width="75" Click="buttonOK_Click" IsDefault="True"/>
         <Button x:Name="buttonCancel" Content="{DynamicResource lang_cancel}" Margin="0,0,10,10" Height="22" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="buttonCancel_Click"/>
 
     </Grid>

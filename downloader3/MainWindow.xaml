@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:downloader3"
         x:Class="downloader3.MainWindow"
         mc:Ignorable="d"
-        Title="wyDownloader" Height="546" Width="903" Closing="Window_Closing" Loaded="Window_Loaded" Icon="favicon.ico" Background="#FFF0F0F0" MinHeight="160" MinWidth="490">
+        Title="mDownloader" Height="546" Width="903" Closing="Window_Closing" Loaded="Window_Loaded" Background="#FFF0F0F0" MinHeight="160" MinWidth="490">
     <Window.Resources>
 
         <LinearGradientBrush x:Key="ProgressBarBackground" EndPoint="1,0" StartPoint="0,0">

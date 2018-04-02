@@ -34,6 +34,7 @@ namespace downloader3
         /// Získá nebo nastaví možnost přehrát zvuk po dokončení stahování
         /// </summary>
         public bool PlaySound           { get; set; } = true;
+        
 
         private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         private static string path = Path.Combine(appdata, App.appName);
@@ -42,7 +43,7 @@ namespace downloader3
         /// <summary>
         /// Načte nastavení
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Vrací referenci na objekt</returns>
         public SettingsStorage Load()
         {
             SettingsStorage storage = this;            

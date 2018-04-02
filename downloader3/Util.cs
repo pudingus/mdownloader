@@ -31,7 +31,6 @@ namespace downloader3
         public static bool IsValidPath(string path)
         {
             bool valid = false;
-
             try
             {
                 if (path.StartsWith("\\") || path.StartsWith("/")) valid = false;
@@ -80,10 +79,10 @@ namespace downloader3
             hour = min / 60;
             min = min - (hour * 60);
 
-            if (hour == 0 && min == 0) str = string.Format("{0}s", sec);
-            else if (min >= 1 && hour == 0) str = string.Format("{0}m {1}s", min, sec);
-            else if (hour >= 1 && min == 0) str = string.Format("{0}h", hour);
-            else str = string.Format("{0}h {1}m", hour, min);
+            if (hour == 0 && min == 0) str = $"{sec}s";
+            else if (min >= 1 && hour == 0) str = $"{min}m {sec}s";
+            else if (hour >= 1 && min == 0) str = $"{hour}h";
+            else str = $"{hour}h {min}m";
 
             return str;
         }
