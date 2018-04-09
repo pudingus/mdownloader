@@ -39,7 +39,7 @@ namespace downloader3
         /// <summary>
         /// Načte seznam odkazů
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Vrátí instanci objektu typu <see cref="LinksStorage"/></returns>
         public LinksStorage Load()
         {
             LinksStorage linksStorage = this;

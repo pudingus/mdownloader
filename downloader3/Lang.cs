@@ -34,14 +34,14 @@ namespace downloader3
 
                 Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
                 Thread.CurrentThread.CurrentUICulture = new CultureInfo(culture);
-            }            
+            }
         }
 
         /// <summary>
         /// Vyhledá zadaný prostředek v přostředcích aplikace a vrátí odpovídající řetězec
         /// </summary>
         /// <param name="resource"></param>
-        /// <returns></returns>
+        /// <returns>Vrátí nalezený řetězec</returns>
         public static string Translate(string resource)
         {
             string result = (string)Application.Current.TryFindResource(resource);

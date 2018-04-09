@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="downloader3.AddHelpWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="6.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>AddHelpWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="downloader3.AddWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAEAABAAAkAAAAAAAAAAAAAQAAAAAA=</HashCode>
+      <FileName>AddWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.212" Collapsed="true" />
+  </Class>
+  <Class Name="downloader3.App" Collapsed="true">
+    <Position X="2.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>App.xaml.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="downloader3.BandwidthWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="2.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAARAAAgAEAAAAAAIAAAAAAAAgAA=</HashCode>
+      <FileName>BandwidthWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="downloader3.DownloadClient" Collapsed="true">
+    <Position X="8.5" Y="2" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <NestedTypes>
+      <Delegate Name="downloader3.DownloadClient.DownloadError" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>DownloadClient.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="downloader3.DownloadClient.DownloadCompleted" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>DownloadClient.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="downloader3.DownloadClient.DownloadInit" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>DownloadClient.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+      <Delegate Name="downloader3.DownloadClient.DownloadStateChanged" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>DownloadClient.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Delegate>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>CERgABQARGQIBATMCASACAAEYIEAQBAACJEAFABDgAA=</HashCode>
+      <FileName>DownloadClient.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="provider" />
+      <Property Name="Item" />
+      <Property Name="State" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="downloader3.Lang" Collapsed="true">
+    <Position X="2.25" Y="3.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAEAAAAAAA=</HashCode>
+      <FileName>Lang.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="downloader3.Link" Collapsed="true">
+    <Position X="4.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAQAAAAAAAAAAAAAAAAAABAACAAAAABAAAA=</HashCode>
+      <FileName>LinksStorage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="downloader3.LinksStorage" Collapsed="true">
+    <Position X="4.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgIBAAAAAAAAAAAACAAAAAAAAAAAAAAAACAAAAAI=</HashCode>
+      <FileName>LinksStorage.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Field Name="List" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="downloader3.LvData" Collapsed="true">
+    <Position X="8.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAABAgAAAAAAAAAQBAAAAAAAgAAAAAEGAAEQ=</HashCode>
+      <FileName>LvData.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Client" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="downloader3.MainWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="4.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>CQYAASIAEAAIAABgABggEBgEBCGAAAAAFACAAQAABAg=</HashCode>
+      <FileName>MainWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="lastItem" />
+      <Field Name="settings" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="downloader3.RemoveWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAIAAgAEAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>RemoveWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="downloader3.RenameWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="8.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAQAAAgAEBAAAAAIAAAAAAAAgAA=</HashCode>
+      <FileName>RenameWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="_item" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="downloader3.SettingsStorage" Collapsed="true">
+    <Position X="6.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgIAADAQAAAAAAAACAAgAAAAAAAAAQAAACAAEAAA=</HashCode>
+      <FileName>SettingsStorage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="downloader3.SettingsWindow" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAABAAAAAEAAAAAAABAAAAAAAgAA=</HashCode>
+      <FileName>SettingsWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="downloader3.Util" Collapsed="true">
+    <Position X="2.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAAEAAAAAAAAAAAAAAQAAAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Util.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="downloader3.Properties.Resources" Collapsed="true">
+    <Position X="2.25" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAABEAAAAQAAAAACAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ShellIcon" Collapsed="true">
+    <Position X="2.25" Y="2" Width="1.5" />
+    <NestedTypes>
+      <Struct Name="ShellIcon.SHFILEINFO" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>ShellIcon.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+      <Enum Name="ShellIcon.SHGFI" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>ShellIcon.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Class Name="ShellIcon.Win32" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>ShellIcon.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>EBAAABAAAACAAACAAAAAAAAAAAEAAgAAAAAEACAAAAA=</HashCode>
+      <FileName>ShellIcon.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="downloader3.States" Collapsed="true">
+    <Position X="8.5" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAIAAEAAAAQIAgAAAAAAAQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DownloadClient.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="downloader3.Providers" Collapsed="true">
+    <Position X="6.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAABABAAAAAAAAAAAAIA=</HashCode>
+      <FileName>DownloadClient.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

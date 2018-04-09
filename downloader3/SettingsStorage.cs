@@ -43,7 +43,7 @@ namespace downloader3
         /// <summary>
         /// Načte nastavení
         /// </summary>
-        /// <returns>Vrací referenci na objekt</returns>
+        /// <returns>Vrací instanci objektu typu <see cref="SettingsStorage"/></returns>
         public SettingsStorage Load()
         {
             SettingsStorage storage = this;            

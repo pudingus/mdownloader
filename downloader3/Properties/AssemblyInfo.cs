@@ -9,9 +9,9 @@ using System.Windows;
 [assembly: AssemblyTitle(App.appName)]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Martin Dočekal")]
 [assembly: AssemblyProduct(App.appName)]
-[assembly: AssemblyCopyright("Copyright ©  2016-2018")]
+[assembly: AssemblyCopyright("Copyright © Martin Dočekal 2016-2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

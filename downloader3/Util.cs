@@ -49,7 +49,7 @@ namespace downloader3
         /// Převede bajty do čitelného formátu a vrátí řetězec
         /// </summary>
         /// <param name="bytes">Bajty</param>
-        /// <returns></returns>
+        /// <returns>Vrátí bajty s jednotkou jako řetězec</returns>
         public static string ConvertBytes(long bytes)
         {
             double KB = Math.Pow(1024, 1);
@@ -68,7 +68,7 @@ namespace downloader3
         /// Převede sekundy do čitelného formátu a vrátí řetězec
         /// </summary>
         /// <param name="sec">Sekundy</param>
-        /// <returns></returns>
+        /// <returns>Vrátí naformátovaný řetězec</returns>
         public static string ConvertTime(long sec)
         {
             string str = " ";

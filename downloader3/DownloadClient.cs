@@ -31,9 +31,7 @@ namespace downloader3
     {        
         public delegate void DownloadError(DownloadClient client, LvData item, string message);
         public delegate void DownloadCompleted(DownloadClient client, LvData item);
-
         public delegate void DownloadInit(DownloadClient client, LvData item);
-
         public delegate void DownloadStateChanged(DownloadClient client, LvData item, States oldState, States newState);
 
         /// <summary>
@@ -55,7 +53,6 @@ namespace downloader3
         /// Nastane když se změní stav stahování
         /// </summary>
         public event DownloadStateChanged OnDownloadStateChanged;
-
          
         /// <summary>
         /// Získá celkovou velikost souboru v bajtech
@@ -91,7 +88,6 @@ namespace downloader3
         /// Získá nebo nastaví rychlostní limit v bajtech
         /// </summary>
         public long SpeedLimit          { get; set; }
-
 
         /// <summary>
         /// Získá úplnou cestu ke stahovanému souboru
