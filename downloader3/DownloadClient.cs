@@ -20,11 +20,6 @@ namespace downloader3
     public enum States { Paused, Queue, Starting, Downloading, Canceled, Completed, Error }
 
     /// <summary>
-    /// Specifikuje typ nebo poskytovatele odkazu
-    /// </summary>
-    public enum Providers { DirectLink, Zippyshare, Openload }
-
-    /// <summary>
     /// Má na starosti získávání dat ze serveru a ukládání na disk, poskytuje informace o průběhu a umožňuje ho ovládat.
     /// </summary>
     public class DownloadClient
@@ -139,9 +134,6 @@ namespace downloader3
         private FileStream fs;
         private AsyncOperation operation = AsyncOperationManager.CreateOperation(null);
         private bool append;
-        private System.Windows.Forms.WebBrowser webBrowser;
-        private DispatcherTimer wbTimer = new DispatcherTimer();
-        private Providers provider;
 
         private const int bufferSize = 1024;
         private const int maxRenameCount = 999;
@@ -211,43 +203,17 @@ namespace downloader3
             timer.Start();
             State = States.Starting;
 
-            //Slovník podporovaných serverů. Klíč typu Providers udává název. Hodnota typu string udává formát regulérního výrazu            
-            var dict = new Dictionary<Providers, string>();
-            dict.Add(Providers.Zippyshare, "http.*://www.*.zippyshare.com/v/.*/file.html");
-            dict.Add(Providers.Openload, "http.*://openload.co/f/.*");
-
-            provider = Providers.DirectLink;
-            foreach (var item in dict)
+            Resolver resolver = new Resolver(Url);
+            resolver.OnExtractionCompleted += (extractedUrl) =>
             {
-                Regex regex = new Regex(item.Value);
-                Match match = regex.Match(Url);
-                if (match.Success)
-                {
-                    provider = item.Key;
-                    break;
-                }
-            }             
-
-            if (provider == Providers.DirectLink) //pokud se jedná o přímý odkaz, rovnou se vytvoří vlákno a spustí stahování
-            {
+                Url = extractedUrl;
                 if (downloadThread == null || !downloadThread.IsAlive)
                 {
                     downloadThread = new Thread(DownloadWorker);
                     downloadThread.Start();
                 }
-            }
-            else //jinak vytvoří nový objekt WebBrowser, který načte stránkou se současnou Url adresou
-            {
-                webBrowser = new System.Windows.Forms.WebBrowser();
-                webBrowser.ScriptErrorsSuppressed = true; //potlačí vyskakovací okna
-                webBrowser.Navigate(Url);
-                webBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
-
-                //spustí časovač, udává časový limit pro načtení stránky
-                wbTimer.Interval = new TimeSpan(0, 0, 0, 0, browserTimeout);
-                wbTimer.Tick += WbTimer_Tick;
-                wbTimer.Start();                
-            }                       
+            };
+            resolver.Extract();               
         }
 
         /// <summary>
@@ -268,8 +234,6 @@ namespace downloader3
         {
             State = States.Paused;
             timer.Stop();
-            wbTimer.Stop();
-            webBrowser?.Stop();
             BytesPerSecond = 0;
             processed = 0;
         }
@@ -285,8 +249,6 @@ namespace downloader3
         {
             State = States.Queue;
             timer.Stop();
-            wbTimer.Stop();
-            webBrowser?.Stop();
             BytesPerSecond = 0;
             processed = 0;
         }
@@ -311,64 +273,6 @@ namespace downloader3
                 }
                 FileName = newName;
             }
-        }
-
-        //Nastane po úplném načtení stránky
-        private void WebBrowser_DocumentCompleted(object sender, System.Windows.Forms.WebBrowserDocumentCompletedEventArgs e)
-        {
-            wbTimer.Stop();
-            ResolveLink();
-            webBrowser.Dispose();
-        }
-
-        //Nastane po vypršení časového limitu pro načtení stránky
-        private void WbTimer_Tick(object sender, EventArgs e)
-        {
-            wbTimer.Stop();
-            if (!webBrowser.IsDisposed)
-            {
-                webBrowser.Stop();
-                ResolveLink();
-                webBrowser.Dispose();
-            }
-        }        
-
-        //Má na starosti extrakci přímých odkazů z podporovaných stránek
-        private void ResolveLink()
-        {
-            string href = "";
-            if (provider == Providers.Zippyshare)
-            {
-                System.Windows.Forms.HtmlElement element = webBrowser.Document.GetElementById("dlbutton");
-                if (element != null)
-                {
-                    href = element.GetAttribute("href");
-                }
-                else
-                {
-                    CallError(Lang.Translate("lang_unable_to_extract"));
-                    return;
-                }
-            }
-            else if (provider == Providers.Openload)
-            {
-                System.Windows.Forms.HtmlElement element = webBrowser.Document.GetElementById("streamurj");
-                if (element != null)
-                {
-                    string streamurj = element.InnerText;
-                    href = "/stream/" + streamurj;
-                }
-                else
-                {
-                    CallError(Lang.Translate("lang_unable_to_extract"));
-                    return;
-                }
-            }
-            Uri uri = new Uri(new Uri(webBrowser.Url.AbsoluteUri), href);
-            Url = WebUtility.UrlDecode(uri.AbsoluteUri);            
-
-            downloadThread = new Thread(DownloadWorker);
-            downloadThread.Start();
         }
 
         //Zkratka pro vyvolání údalosti při chybě

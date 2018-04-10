@@ -67,7 +67,6 @@ namespace downloader3
 
             foreach (Link link in links.List)
             {
-                string path = Path.Combine(link.Directory, link.FileName);
                 LvData item = new LvData();
 
                 item.Client = new DownloadClient(link.Url, link.Directory, item, link.TotalBytes, link.FileName);
