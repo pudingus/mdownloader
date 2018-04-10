@@ -10,13 +10,13 @@ namespace downloader3
     /// </summary>
     public partial class RenameWindow : Window
     {    
-        private LvData _item;
+        private Downloader _item;
 
         /// <summary>
         /// Vytvoří novou instanci třídy <see cref="RenameWindow"/>
         /// </summary>
         /// <param name="item">Reference na vybranou položku</param>
-        public RenameWindow(LvData item)
+        public RenameWindow(Downloader item)
         {
             InitializeComponent();
             _item = item;
@@ -37,7 +37,7 @@ namespace downloader3
                 {
                     if (!File.Exists(path))
                     {
-                        _item.Client.Rename(textBox.Text);
+                        _item.Rename(textBox.Text);
 
                         DialogResult = true;
                     }
@@ -59,7 +59,7 @@ namespace downloader3
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            textBox.Text = _item.Client.FileName;
+            textBox.Text = _item.FileName;
 
             textBox.Focus();
             textBox.SelectAll();

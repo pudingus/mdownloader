@@ -11,6 +11,10 @@ using System.Windows.Controls;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
+using System.Drawing;
+using System.Windows.Media;
 
 namespace downloader3
 {
@@ -22,12 +26,22 @@ namespace downloader3
     /// <summary>
     /// Má na starosti získávání dat ze serveru a ukládání na disk, poskytuje informace o průběhu a umožňuje ho ovládat.
     /// </summary>
-    public class DownloadClient
+    public class Downloader
     {        
-        public delegate void DownloadError(DownloadClient client, LvData item, string message);
-        public delegate void DownloadCompleted(DownloadClient client, LvData item);
-        public delegate void DownloadInit(DownloadClient client, LvData item);
-        public delegate void DownloadStateChanged(DownloadClient client, LvData item, States oldState, States newState);
+        public delegate void DownloadError(Downloader item, string message);
+        public delegate void DownloadCompleted(Downloader item);
+        public delegate void DownloadInit(Downloader item);
+        public delegate void DownloadStateChanged(Downloader item, States oldState, States newState);
+
+
+        public ImageSource Icon { get; set; }
+        public string Name { get; set; }
+        public string Size { get; set; }
+        public double Progress { get; set; }
+        public string Speed { get; set; }
+        public string Remaining { get; set; }
+        public string ErrorMsg { get; set; }
+
 
         /// <summary>
         /// Nastane když stahovaní přeruší chyba
@@ -119,15 +133,12 @@ namespace downloader3
 
                     operation.Post(new SendOrPostCallback(delegate (object state)
                     {
-                        OnDownloadStateChanged?.Invoke(this, Item, oldState, _state);
+                        OnDownloadStateChanged?.Invoke(this, oldState, _state);
                     }), null);
                 }
             }
         }
         private States _state;
-
-        private LvData Item { get; set; }
-
         private Thread downloadThread; 
         private int processed = 0;
         private DispatcherTimer timer = new DispatcherTimer();
@@ -144,17 +155,16 @@ namespace downloader3
         private const int speedlimitSleep = 200;
 
         /// <summary>
-        /// Vytvoří novou instanci třídy <see cref="DownloadClient"/>.
+        /// Vytvoří novou instanci třídy <see cref="Downloader"/>.
         /// </summary>
         /// <param name="url">Odkaz ze kterého se soubor stáhne.</param>
         /// <param name="directory">Úplná cesta ke složce, kde se soubor uloží.</param>
         /// <param name="item">Reference na položku v listview, která obsahuje tento objekt.</param>
-        public DownloadClient(string url, string directory, LvData item)
+        public Downloader(string url, string directory)
         {
             append = false;
             Url = WebUtility.UrlDecode(url);
             Directory = directory;
-            Item = item;
 
             timer.Tick += Timer_Tick;
             timer.Interval = new TimeSpan(0, 0, 0, 0, updateInterval);
@@ -162,21 +172,20 @@ namespace downloader3
 
 
         /// <summary>
-        /// Vytvoří novou instanci třídy <see cref="DownloadClient"/> a načte informace o předchozím stahování.
+        /// Vytvoří novou instanci třídy <see cref="Downloader"/> a načte informace o předchozím stahování.
         /// </summary>
         /// <param name="url">Odkaz ze kterého se soubor stáhne.</param>
         /// <param name="directory">Úplná cesta ke složce, kde se soubor uloží.</param>
         /// <param name="item">Reference na položku v listview, která obsahuje tento objekt.</param>
         /// <param name="cachedTotalBytes">Očekávaná celková velikost soubor. Slouží ke kontrole, jestli nebyl soubor na serveru změněn.</param>
         /// <param name="cachedFileName">Název souboru, na který se má navázat</param>
-        public DownloadClient(string url, string directory, LvData item,
+        public Downloader(string url, string directory,
                               long cachedTotalBytes, string cachedFileName)
         {
             append = true;
             Url = WebUtility.UrlDecode(url);
             Directory = directory;
             TotalBytes = cachedTotalBytes;
-            Item = item;
             FileName = cachedFileName;
 
             timer.Tick += Timer_Tick;
@@ -281,7 +290,7 @@ namespace downloader3
             State = States.Error;
             operation.Post(new SendOrPostCallback(delegate (object state)
             {
-                OnDownloadError?.Invoke(this, Item, message);
+                OnDownloadError?.Invoke(this, message);
             }), null);
         }
 
@@ -361,7 +370,7 @@ namespace downloader3
 
                     operation.Post(new SendOrPostCallback(delegate (object state)
                     {
-                        OnDownloadInit?.Invoke(this, Item);
+                        OnDownloadInit?.Invoke(this);
                     }), null);
 
                     byte[] buffer = new byte[bufferSize];
@@ -410,7 +419,7 @@ namespace downloader3
                     State = States.Completed;
                     operation.Post(new SendOrPostCallback(delegate (object state)
                     {
-                        OnDownloadCompleted?.Invoke(this, Item);
+                        OnDownloadCompleted?.Invoke(this);
                     }), null);
                 }
                 else if (State != States.Error)
@@ -428,6 +437,55 @@ namespace downloader3
         {
             BytesPerSecond = processed;
             processed = 0;
+        }
+
+        /// <summary>
+        /// Načte ikonu souboru podle jeho typu
+        /// </summary>
+        public void LoadIcon()
+        {
+            if (Name == null) return;
+
+            Icon icon;
+            if (FileName != "" && File.Exists(FullPath))
+                icon = ShellIcon.GetSmallIcon(FullPath);
+            else
+            {
+                string ext = Path.GetExtension(Name);
+                if (ext == "") ext = Name;
+                icon = ShellIcon.GetSmallIconFromExtension(ext);
+            }
+            var bmpSrc = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            icon.Dispose();
+            Icon = bmpSrc;
+        }
+
+        /// <summary>
+        /// Obnoví data položky
+        /// </summary>
+        public void Refresh()
+        {
+            if (FileName == "") Name = Url;
+            else Name = FileName;
+            if (TotalBytes > 0) Progress = (double)BytesDownloaded / TotalBytes * 100;
+            Size = string.Format("{0}/{1}", Util.ConvertBytes(BytesDownloaded), Util.ConvertBytes(TotalBytes));
+            if (State == States.Paused) Remaining = Lang.Translate("lang_paused");
+            else if (State == States.Queue) Remaining = Lang.Translate("lang_inqueue");
+            else if (State == States.Canceled) Remaining = Lang.Translate("lang_canceled");
+            else if (State == States.Completed) Remaining = Lang.Translate("lang_completed");
+            else if (State == States.Downloading)
+            {
+                long sec = 0;
+                if (BytesDownloaded > 0 && BytesPerSecond > 0)
+                    sec = (TotalBytes - BytesDownloaded) * 1 / BytesPerSecond;
+                Remaining = Util.ConvertTime(sec);
+            }
+            else if (State == States.Error) Remaining = Lang.Translate("lang_error") + ": " + ErrorMsg;
+            else if (State == States.Starting) Remaining = Lang.Translate("lang_starting");
+
+            if (SpeedLimit > 0)
+                Speed = string.Format("{0}/s [{1}/s]", Util.ConvertBytes(BytesPerSecond), Util.ConvertBytes(SpeedLimit));
+            else Speed = string.Format("{0}/s", Util.ConvertBytes(BytesPerSecond));
         }
     }
 }
