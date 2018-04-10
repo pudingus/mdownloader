@@ -10,13 +10,13 @@ namespace downloader3
     /// </summary>
     public partial class RenameWindow : Window
     {    
-        private Downloader _item;
+        private DownloadClient _item;
 
         /// <summary>
         /// Vytvoří novou instanci třídy <see cref="RenameWindow"/>
         /// </summary>
         /// <param name="item">Reference na vybranou položku</param>
-        public RenameWindow(Downloader item)
+        public RenameWindow(DownloadClient item)
         {
             InitializeComponent();
             _item = item;

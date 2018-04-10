@@ -2,8 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Threading;
-using System.Windows.Threading;
 using System.ComponentModel;
 using System.Windows;
 using System.Text.RegularExpressions;
@@ -15,6 +13,9 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Drawing;
 using System.Windows.Media;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace downloader3
 {
@@ -26,12 +27,12 @@ namespace downloader3
     /// <summary>
     /// Má na starosti získávání dat ze serveru a ukládání na disk, poskytuje informace o průběhu a umožňuje ho ovládat.
     /// </summary>
-    public class Downloader
+    public class DownloadClient
     {        
-        public delegate void DownloadError(Downloader item, string message);
-        public delegate void DownloadCompleted(Downloader item);
-        public delegate void DownloadInit(Downloader item);
-        public delegate void DownloadStateChanged(Downloader item, States oldState, States newState);
+        public delegate void DownloadError(DownloadClient item, string message);
+        public delegate void DownloadCompleted(DownloadClient item);
+        public delegate void DownloadInit(DownloadClient item);
+        public delegate void DownloadStateChanged(DownloadClient item, States oldState, States newState);
 
 
         public ImageSource Icon { get; set; }
@@ -138,13 +139,16 @@ namespace downloader3
                 }
             }
         }
+        //private Thread downloadThread; 
+        private Task task;
+
         private States _state;
-        private Thread downloadThread; 
         private int processed = 0;
         private DispatcherTimer timer = new DispatcherTimer();
         private FileStream fs;
         private AsyncOperation operation = AsyncOperationManager.CreateOperation(null);
         private bool append;
+
 
         private const int bufferSize = 1024;
         private const int maxRenameCount = 999;
@@ -155,12 +159,11 @@ namespace downloader3
         private const int speedlimitSleep = 200;
 
         /// <summary>
-        /// Vytvoří novou instanci třídy <see cref="Downloader"/>.
+        /// Vytvoří novou instanci třídy <see cref="DownloadClient"/>.
         /// </summary>
         /// <param name="url">Odkaz ze kterého se soubor stáhne.</param>
         /// <param name="directory">Úplná cesta ke složce, kde se soubor uloží.</param>
-        /// <param name="item">Reference na položku v listview, která obsahuje tento objekt.</param>
-        public Downloader(string url, string directory)
+        public DownloadClient(string url, string directory)
         {
             append = false;
             Url = WebUtility.UrlDecode(url);
@@ -172,14 +175,13 @@ namespace downloader3
 
 
         /// <summary>
-        /// Vytvoří novou instanci třídy <see cref="Downloader"/> a načte informace o předchozím stahování.
+        /// Vytvoří novou instanci třídy <see cref="DownloadClient"/> a načte informace o předchozím stahování.
         /// </summary>
         /// <param name="url">Odkaz ze kterého se soubor stáhne.</param>
         /// <param name="directory">Úplná cesta ke složce, kde se soubor uloží.</param>
-        /// <param name="item">Reference na položku v listview, která obsahuje tento objekt.</param>
         /// <param name="cachedTotalBytes">Očekávaná celková velikost soubor. Slouží ke kontrole, jestli nebyl soubor na serveru změněn.</param>
         /// <param name="cachedFileName">Název souboru, na který se má navázat</param>
-        public Downloader(string url, string directory,
+        public DownloadClient(string url, string directory,
                               long cachedTotalBytes, string cachedFileName)
         {
             append = true;
@@ -215,12 +217,15 @@ namespace downloader3
             Resolver resolver = new Resolver(Url);
             resolver.OnExtractionCompleted += (extractedUrl) =>
             {
-                Url = extractedUrl;
-                if (downloadThread == null || !downloadThread.IsAlive)
+                Url = extractedUrl;                
+
+                if (task == null || task.IsCompleted)
                 {
-                    downloadThread = new Thread(DownloadWorker);
-                    downloadThread.Start();
-                }
+                    task = new Task(DownloadWorker, CancellationToken.None, TaskCreationOptions.LongRunning);
+                    task.Start();
+                   
+                }                  
+               
             };
             resolver.Extract();               
         }
@@ -231,9 +236,10 @@ namespace downloader3
         public void Cancel()
         {
             State = States.Canceled;
-            if (downloadThread == null || !downloadThread.IsAlive)   
+                    
+            if (task == null || task.IsCompleted)
                 if (File.Exists(FullPath))
-                    File.Delete(FullPath);            
+                    File.Delete(FullPath);
         }
 
         /// <summary>
@@ -274,10 +280,10 @@ namespace downloader3
                 string oldPath = Path.Combine(Directory, FileName);
 
                 fs?.Close();
-                if (File.Exists(oldPath)) File.Move(oldPath, newPath);
-                if (downloadThread != null)
+                if (File.Exists(oldPath)) File.Move(oldPath, newPath); 
+                if (task != null)
                 {
-                    if (downloadThread.IsAlive)
+                    if (!task.IsCompleted)
                         fs = new FileStream(newPath, FileMode.Append, FileAccess.Write, FileShare.Read);
                 }
                 FileName = newName;

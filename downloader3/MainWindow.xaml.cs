@@ -32,7 +32,7 @@ namespace downloader3
         /// </summary>
         public SettingsStorage settings = new SettingsStorage();
         private DispatcherTimer timer = new DispatcherTimer();
-        private Downloader lastItem;
+        private DownloadClient lastItem;
 
         System.Windows.Forms.NotifyIcon trayIcon;
 
@@ -67,7 +67,7 @@ namespace downloader3
 
             foreach (Link link in links.List)
             {
-                Downloader item = new Downloader(link.Url, link.Directory, link.TotalBytes, link.FileName);
+                DownloadClient item = new DownloadClient(link.Url, link.Directory, link.TotalBytes, link.FileName);
                 item.OnDownloadInit += Client_OnDownloadInit;
                 item.OnDownloadCompleted += Client_OnDownloadCompleted;
                 item.OnDownloadError += Client_OnDownloadError;
@@ -92,7 +92,7 @@ namespace downloader3
             trayIcon.Visible = false;
         }
 
-        private void Client_OnDownloadStateChanged(Downloader item, States oldState, States newState)
+        private void Client_OnDownloadStateChanged(DownloadClient item, States oldState, States newState)
         {
             if (newState != States.Error)
             {
@@ -102,12 +102,12 @@ namespace downloader3
             }
         }
 
-        private void Client_OnDownloadInit(Downloader item)
+        private void Client_OnDownloadInit(DownloadClient item)
         {
             item.LoadIcon();
         }
 
-        private void Client_OnDownloadError(Downloader item, string message)
+        private void Client_OnDownloadError(DownloadClient item, string message)
         {
             item.ErrorMsg = message;
             item.Refresh();
@@ -124,7 +124,7 @@ namespace downloader3
             if (settings.PlaySound) System.Media.SystemSounds.Hand.Play();
         }
 
-        private void Client_OnDownloadCompleted(Downloader item)
+        private void Client_OnDownloadCompleted(DownloadClient item)
         {
             item.LoadIcon();
 
@@ -147,14 +147,14 @@ namespace downloader3
                 string dir = addWindow.pathTextBox.Text;
                 foreach (string url in addWindow.UrlList)
                 {
-                    Downloader item = new Downloader(url, dir);
+                    DownloadClient item = new DownloadClient(url, dir);
                     item.SpeedLimit = settings.SpeedLimit;
                     item.OnDownloadInit += Client_OnDownloadInit;
                     item.OnDownloadCompleted += Client_OnDownloadCompleted;
                     item.OnDownloadError += Client_OnDownloadError;
                     item.OnDownloadStateChanged += Client_OnDownloadStateChanged;
 
-                    if (Downloader.ActiveCount < settings.MaxDownloads) item.Start();
+                    if (DownloadClient.ActiveCount < settings.MaxDownloads) item.Start();
                     else item.Queue();
                     item.Refresh();
                     item.LoadIcon();
@@ -178,15 +178,15 @@ namespace downloader3
         private void buttonResume_Click(object sender, RoutedEventArgs e)
         {
             //seřadí položky podle pořadí v listView, protože jsou defaultně v pořadí, v jakém byly vybrány
-            List<Downloader> selectedList = new List<Downloader>();
-            foreach (Downloader item in listView.Items) if (listView.SelectedItems.Contains(item)) selectedList.Add(item);
+            List<DownloadClient> selectedList = new List<DownloadClient>();
+            foreach (DownloadClient item in listView.Items) if (listView.SelectedItems.Contains(item)) selectedList.Add(item);
 
-            foreach (Downloader item in selectedList)
+            foreach (DownloadClient item in selectedList)
             {
                 if (item.State == States.Paused ||
                     item.State == States.Error)
                 {
-                    if (Downloader.ActiveCount < settings.MaxDownloads) item.Start();
+                    if (DownloadClient.ActiveCount < settings.MaxDownloads) item.Start();
                     else item.Queue();
                 }
             }
@@ -196,7 +196,7 @@ namespace downloader3
 
         private void buttonPause_Click(object sender, RoutedEventArgs e)
         {
-            foreach (Downloader item in listView.SelectedItems)
+            foreach (DownloadClient item in listView.SelectedItems)
             {
                 if (item.State == States.Downloading ||
                     item.State == States.Starting ||
@@ -217,10 +217,10 @@ namespace downloader3
             removeWindow.Owner = this;
             if (removeWindow.ShowDialog() == true)
             {
-                List<Downloader> selectedList = new List<Downloader>();
-                foreach (Downloader item in listView.SelectedItems) selectedList.Add(item);
+                List<DownloadClient> selectedList = new List<DownloadClient>();
+                foreach (DownloadClient item in listView.SelectedItems) selectedList.Add(item);
 
-                foreach (Downloader item in selectedList)
+                foreach (DownloadClient item in selectedList)
                 {
                     if (removeWindow.DeleteFiles) item.Cancel();
                     listView.Items.Remove(item);
@@ -278,7 +278,7 @@ namespace downloader3
                 settings.Save();
                 CheckQueue();
                 Lang.SetLanguage(settings.Language);
-                foreach (Downloader item in listView.Items) item.Refresh();
+                foreach (DownloadClient item in listView.Items) item.Refresh();
                 listView.Items.Refresh();
             }
         }
@@ -290,7 +290,7 @@ namespace downloader3
         {
             int count = 0;
 
-            foreach (Downloader item in listView.Items)
+            foreach (DownloadClient item in listView.Items)
             {
                 if (count < settings.MaxDownloads)
                 {
@@ -312,9 +312,9 @@ namespace downloader3
         {
             long totalSpeed = 0;
 
-            if (Downloader.ActiveCount > 0)
+            if (DownloadClient.ActiveCount > 0)
             {
-                foreach (Downloader item in listView.Items)
+                foreach (DownloadClient item in listView.Items)
                 {
                     item.Refresh();
                     totalSpeed += item.BytesPerSecond;
@@ -323,14 +323,14 @@ namespace downloader3
             }
 
             Title = App.appName + " - " +
-                Downloader.ActiveCount + "/" +
+                DownloadClient.ActiveCount + "/" +
                 listView.Items.Count + " - " +
                 Util.ConvertBytes(totalSpeed) + "/s";
         }
 
         private void Item_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            Downloader item = (sender as ListViewItem).DataContext as Downloader;
+            DownloadClient item = (sender as ListViewItem).DataContext as DownloadClient;
             try
             {
                 if (File.Exists(item.FullPath)) Process.Start(item.FullPath);
@@ -340,7 +340,7 @@ namespace downloader3
 
         private void MenuItemOpen_Click(object sender, RoutedEventArgs e) //Otevřít
         {
-            Downloader item = lastItem;
+            DownloadClient item = lastItem;
             try
             {
                 if (File.Exists(item.FullPath)) Process.Start(item.FullPath);
@@ -350,7 +350,7 @@ namespace downloader3
 
         private void MenuItemFolder_Click(object sender, RoutedEventArgs e) //Otevřít ve složce
         {
-            Downloader item = lastItem;
+            DownloadClient item = lastItem;
 
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
@@ -364,7 +364,7 @@ namespace downloader3
 
         private void MenuItemRename_Click(object sender, RoutedEventArgs e) //Přejmenovat
         {
-            Downloader item = lastItem;
+            DownloadClient item = lastItem;
 
             if (item.FileName == "") return;
 
@@ -380,7 +380,7 @@ namespace downloader3
 
         private void MenuItemLimit_Click(object sender, RoutedEventArgs e) //Omezit rychlost
         {
-            Downloader item = lastItem;
+            DownloadClient item = lastItem;
 
             BandwidthWindow bandwidthWindow = new BandwidthWindow();
             bandwidthWindow.textBox.Text = (item.SpeedLimit / 1024).ToString();
@@ -395,7 +395,7 @@ namespace downloader3
 
         private void MenuItemCopy_Click(object sender, RoutedEventArgs e)
         {
-            Downloader item = lastItem;
+            DownloadClient item = lastItem;
 
             Clipboard.SetText(item.Url);
         }
@@ -403,7 +403,7 @@ namespace downloader3
         private void ListViewItem_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             ListViewItem cItem = sender as ListViewItem;
-            Downloader item = cItem.DataContext as Downloader;
+            DownloadClient item = cItem.DataContext as DownloadClient;
             lastItem = item;
 
             if (cItem != null && item != null)
@@ -427,7 +427,7 @@ namespace downloader3
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            if (Downloader.ActiveCount > 0)
+            if (DownloadClient.ActiveCount > 0)
             {
                 if (MessageBox.Show(
                     Lang.Translate("lang_active_download"),
@@ -442,7 +442,7 @@ namespace downloader3
 
             LinksStorage links = new LinksStorage();
 
-            foreach (Downloader item in listView.Items)
+            foreach (DownloadClient item in listView.Items)
             {
                 Link link = new Link();
                 link.Directory = item.Directory;
