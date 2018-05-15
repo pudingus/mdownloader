@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:downloader3"
         x:Class="downloader3.MainWindow"
         mc:Ignorable="d"
-        Title="mDownloader" Height="546" Width="903" Closing="Window_Closing" Loaded="Window_Loaded" Background="#FFF0F0F0" MinHeight="160" MinWidth="490">
+        Title="mDownloader" Height="546" Width="903" Closing="Window_Closing" Loaded="Window_Loaded" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" MinHeight="160" MinWidth="490">
     <Window.Resources>
 
         <LinearGradientBrush x:Key="ProgressBarBackground" EndPoint="1,0" StartPoint="0,0">
@@ -97,16 +97,15 @@
     </Window.Resources>
 
     <Grid>
-        <ListView x:Name="listView" Margin="10,49,10,10" Foreground="Black" >
+        <ListView x:Name="listView" Margin="10,49,10,10" Foreground="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" >
             <ListView.Resources>
                 <ContextMenu x:Key="ItemContextMenu">
-                    <MenuItem Header="{DynamicResource lang_open}" Background="WhiteSmoke" Click="MenuItemOpen_Click" FontWeight="Bold" />
-                    <MenuItem Header="{DynamicResource lang_openinfolder}" Background="WhiteSmoke" Click="MenuItemFolder_Click"/>
-                    <MenuItem Header="{DynamicResource lang_rename}" Background="WhiteSmoke" Click="MenuItemRename_Click"  />
-                    <MenuItem Header="{DynamicResource lang_speedlimit}" Background="WhiteSmoke" Click="MenuItemLimit_Click" />
-                    <MenuItem Header="{DynamicResource lang_copy_link}" Background="WhiteSmoke" Click="MenuItemCopy_Click" />
-                </ContextMenu>
-
+                    <MenuItem Header="{DynamicResource lang_open}" Click="MenuItemOpen_Click" FontWeight="Bold" />
+                    <MenuItem Header="{DynamicResource lang_openinfolder}" Click="MenuItemFolder_Click"/>
+                    <MenuItem Header="{DynamicResource lang_rename}" Click="MenuItemRename_Click"  />
+                    <MenuItem Header="{DynamicResource lang_speedlimit}" Click="MenuItemLimit_Click" />
+                    <MenuItem Header="{DynamicResource lang_copy_link}" Click="MenuItemCopy_Click" />
+                </ContextMenu> 
             </ListView.Resources>
             <ListView.ItemContainerStyle>
                 <Style TargetType="{x:Type ListViewItem}" >
