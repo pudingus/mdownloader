@@ -9,7 +9,7 @@ namespace downloader3
     /// Představuje okno pro nastavení rychlostního limitu
     /// </summary>
     public partial class BandwidthWindow : Window
-    {            
+    {
         /// <summary>
         /// Vytvoří novou instanci třídy <see cref="BandwidthWindow"/>
         /// </summary>
@@ -19,14 +19,14 @@ namespace downloader3
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
-        {            
+        {
             textBox.Focus();
             textBox.SelectAll();
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)
-        {            
-            DialogResult = true;            
+        {
+            DialogResult = true;
         }
 
         private void buttonCancel_Click(object sender, RoutedEventArgs e)
@@ -42,7 +42,7 @@ namespace downloader3
             {
                 e.Handled = true;
             }
-        }      
+        }
 
         private void textBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
@@ -53,7 +53,7 @@ namespace downloader3
         private void textBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-            {                
+            {
                 DialogResult = true;
             }
         }

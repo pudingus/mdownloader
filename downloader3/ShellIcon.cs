@@ -89,7 +89,7 @@ public static class ShellIcon
         public static extern int DestroyIcon(IntPtr hIcon);
 
     }
-    
+
     public static Icon GetSmallFolderIcon()
     {
         return GetIcon("folder", SHGFI.SmallIcon | SHGFI.UseFileAttributes, true);

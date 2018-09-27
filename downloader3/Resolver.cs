@@ -23,7 +23,7 @@ namespace downloader3
         public delegate void ExtractionError(string message);
         public event ExtractionError OnExtractionError;
 
-        
+
         public Providers Provider { get; private set; }
         public string Url { get; private set; }
 
@@ -34,7 +34,7 @@ namespace downloader3
         public Resolver(string url)
         {
             Url = url;
-            //Slovník podporovaných serverů. Klíč typu Providers udává název. Hodnota typu string udává formát regulérního výrazu 
+            //Slovník podporovaných serverů. Klíč typu Providers udává název. Hodnota typu string udává formát regulérního výrazu
 
             var dict = new Dictionary<Providers, string>();
             dict.Add(Providers.Zippyshare, "http.*://www.*.zippyshare.com/v/.*/file.html");
@@ -54,7 +54,7 @@ namespace downloader3
         }
 
         public void Extract()
-        {            
+        {
             if (Provider != Providers.DirectLink) //jinak vytvoří nový objekt WebBrowser, který načte stránkou se současnou Url adresou
             {
                 webBrowser = new System.Windows.Forms.WebBrowser();
@@ -80,7 +80,7 @@ namespace downloader3
             if (Provider == Providers.Zippyshare)
             {
                 System.Windows.Forms.HtmlElement element = webBrowser.Document.GetElementById("dlbutton");
-                if (element != null) href = element.GetAttribute("href");                
+                if (element != null) href = element.GetAttribute("href");
                 else
                 {
                     OnExtractionError?.Invoke(Lang.Translate("lang_unable_to_extract"));
@@ -97,7 +97,7 @@ namespace downloader3
                     return;
                 }
             }
-            Uri uri = new Uri(new Uri(webBrowser.Url.AbsoluteUri), href);           
+            Uri uri = new Uri(new Uri(webBrowser.Url.AbsoluteUri), href);
 
             OnExtractionCompleted?.Invoke(WebUtility.UrlDecode(uri.AbsoluteUri));
         }

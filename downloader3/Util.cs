@@ -16,10 +16,9 @@ namespace downloader3
         /// </summary>
         /// <param name="url">Url adresa</param>
         /// <returns></returns>
-        public static bool IsValidURL(string url)
+        public static bool IsUrlValid(string url) //IsValidURL -> IsUrlValid (XMLHTTPParser, compared to  XmlHttpParser)
         {
-            Uri uriResult;
-            return Uri.TryCreate(url, UriKind.Absolute, out uriResult)
+            return Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult)
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
         }
 
@@ -28,7 +27,7 @@ namespace downloader3
         /// </summary>
         /// <param name="path">Cesta</param>
         /// <returns></returns>
-        public static bool IsValidPath(string path)
+        public static bool IsPathValid(string path)
         {
             bool valid = false;
             try

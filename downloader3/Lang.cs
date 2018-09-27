@@ -19,7 +19,7 @@ namespace downloader3
         /// <param name="culture"></param>
         public static void SetLanguage(string culture)
         {
-            if (String.IsNullOrEmpty(culture)) return;
+            if (string.IsNullOrEmpty(culture)) return;
 
             var list = Application.Current.Resources.MergedDictionaries.ToList();
 

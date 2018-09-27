@@ -28,12 +28,12 @@ namespace downloader3
         /// <summary>
         /// Představuje seznam zadaných odkazů bez nadbytečných mezer nebo prázdných řádků
         /// </summary>
-        public List<string> UrlList { get; private set; }      
+        public List<string> UrlList { get; private set; }
 
         private void buttonSave_Click(object sender, RoutedEventArgs e)
         {
-            if (Util.IsValidPath(pathTextBox.Text))
-            {                
+            if (Util.IsPathValid(pathTextBox.Text))
+            {
                 UrlList = new List<string>();
                 List<string> badLines = new List<string>();
 
@@ -41,12 +41,12 @@ namespace downloader3
                 {
                     string url = linksTextBox.GetLineText(i);
 
-                    if (Util.IsValidURL(url))
+                    if (Util.IsUrlValid(url))
                     {
                         url = Regex.Replace(url, @"\r\n?|\n", "");
                         UrlList.Add(url);
                     }
-                    else if (!String.IsNullOrWhiteSpace(url)) badLines.Add(url);                    
+                    else if (!String.IsNullOrWhiteSpace(url)) badLines.Add(url);
                 }
 
                 if (badLines.Count > 0)
@@ -66,12 +66,12 @@ namespace downloader3
                     MessageBox.Show(Lang.Translate("lang_no_valid_links"), Lang.Translate("lang_error"), MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 else DialogResult = true;
-            }    
+            }
             else
             {
                 MessageBox.Show(Lang.Translate("lang_invalid_path"), Lang.Translate("lang_error"), MessageBoxButton.OK, MessageBoxImage.Error);
-            }            
-        }        
+            }
+        }
 
         private void buttonBrowse_Click(object sender, RoutedEventArgs e)
         {

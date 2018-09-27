@@ -34,7 +34,7 @@ namespace downloader3
         /// Získá nebo nastaví možnost přehrát zvuk po dokončení stahování
         /// </summary>
         public bool PlaySound           { get; set; } = true;
-        
+
 
         private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         private static string path = Path.Combine(appdata, App.appName);
@@ -46,17 +46,17 @@ namespace downloader3
         /// <returns>Vrací instanci objektu typu <see cref="SettingsStorage"/></returns>
         public SettingsStorage Load()
         {
-            SettingsStorage storage = this;            
+            SettingsStorage storage = this;
             try
             {
                 Directory.CreateDirectory(path);
-                
+
                 using (StreamReader sr = new StreamReader(filepath))
                 {
                     XmlSerializer xmls = new XmlSerializer(typeof(SettingsStorage));
                     storage = xmls.Deserialize(sr) as SettingsStorage;
-                }                                                                
-            }          
+                }
+            }
             catch (FileNotFoundException ex)
             {
                 Console.WriteLine(ex.Message);
@@ -64,7 +64,7 @@ namespace downloader3
             catch (UnauthorizedAccessException ex)
             {
                 Console.WriteLine(ex.Message);
-            }    
+            }
             catch (InvalidOperationException ex)
             {
                 Console.WriteLine(ex.Message);
@@ -93,7 +93,7 @@ namespace downloader3
                     XmlSerializer xmls = new XmlSerializer(typeof(SettingsStorage));
                     xmls.Serialize(sw, this);
                 }
-            }                 
+            }
             catch (UnauthorizedAccessException ex)
             {
                 Console.WriteLine(ex.Message);

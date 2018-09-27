@@ -13,7 +13,7 @@ namespace downloader3
     /// </summary>
     [Serializable]
     public class Link
-    {        
+    {
         public string FileName { get; set; }
         public string Directory { get; set; }
         public string Url { get; set; }
@@ -32,9 +32,9 @@ namespace downloader3
         /// </summary>
         public List<Link> List = new List<Link>();
 
-        private static string filename = "links.xml";
-        private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        private static string path = Path.Combine(appdata, App.appName, filename);
+        private static readonly string filename = "links.xml";
+        private static readonly string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private static readonly string path = Path.Combine(appdata, App.appName, filename);
 
         /// <summary>
         /// Načte seznam odkazů

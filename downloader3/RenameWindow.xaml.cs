@@ -9,7 +9,7 @@ namespace downloader3
     /// Představuje okno pro přejmenování položky a souboru
     /// </summary>
     public partial class RenameWindow : Window
-    {    
+    {
         private DownloadClient _item;
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace downloader3
             {
                 string path = Path.Combine(_item.Directory, textBox.Text);
 
-                if (Util.IsValidPath(path))
+                if (Util.IsPathValid(path))
                 {
                     if (!File.Exists(path))
                     {
@@ -44,7 +44,7 @@ namespace downloader3
                     else MessageBox.Show(Lang.Translate("lang_file_exists"), Lang.Translate("lang_error"), MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 else MessageBox.Show(Lang.Translate("lang_invalid_path"), Lang.Translate("lang_error"), MessageBoxButton.OK, MessageBoxImage.Error);
-            }            
+            }
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)

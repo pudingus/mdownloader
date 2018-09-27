@@ -28,7 +28,7 @@ namespace downloader3
     /// Má na starosti získávání dat ze serveru a ukládání na disk, poskytuje informace o průběhu a umožňuje ho ovládat.
     /// </summary>
     public class DownloadClient
-    {        
+    {
         public delegate void DownloadError(DownloadClient item, string message);
         public delegate void DownloadCompleted(DownloadClient item);
         public delegate void DownloadInit(DownloadClient item);
@@ -48,22 +48,22 @@ namespace downloader3
         /// Nastane když stahovaní přeruší chyba
         /// </summary>
         public event DownloadError OnDownloadError;
-       
+
         /// <summary>
         /// Nastane když se stahování úspěšně dokončí
         /// </summary>
         public event DownloadCompleted OnDownloadCompleted;
-        
+
         /// <summary>
         /// Nastane když se zahají stahování, po tom, co je soubor vytvořen na disku
         /// </summary>
         public event DownloadInit OnDownloadInit;
-        
+
         /// <summary>
         /// Nastane když se změní stav stahování
         /// </summary>
         public event DownloadStateChanged OnDownloadStateChanged;
-         
+
         /// <summary>
         /// Získá celkovou velikost souboru v bajtech
         /// </summary>
@@ -111,7 +111,7 @@ namespace downloader3
 
         /// <summary>
         /// Získá stav současného stahování
-        /// </summary>        
+        /// </summary>
         public States State {
             get {
                 return _state;
@@ -139,7 +139,7 @@ namespace downloader3
                 }
             }
         }
-        //private Thread downloadThread; 
+        //private Thread downloadThread;
         private Task task;
 
         private States _state;
@@ -154,7 +154,7 @@ namespace downloader3
         private const int maxRenameCount = 999;
         private const int requestTimeout = 6000;    //v milisekundách
         private const int browserTimeout = 6000;
-        private const int updateInterval = 1000;        
+        private const int updateInterval = 1000;
         private const int pauseSleep = 100;
         private const int speedlimitSleep = 200;
 
@@ -201,7 +201,7 @@ namespace downloader3
             if (BytesDownloaded == TotalBytes && TotalBytes > 0) State = States.Completed;
             else State = States.Paused;
         }
-        
+
         /// <summary>
         /// Zahájí stahování bez blokování současného vlákna
         /// </summary>
@@ -217,17 +217,17 @@ namespace downloader3
             Resolver resolver = new Resolver(Url);
             resolver.OnExtractionCompleted += (extractedUrl) =>
             {
-                Url = extractedUrl;                
+                Url = extractedUrl;
 
                 if (task == null || task.IsCompleted)
                 {
                     task = new Task(DownloadWorker, CancellationToken.None, TaskCreationOptions.LongRunning);
                     task.Start();
-                   
-                }                  
-               
+
+                }
+
             };
-            resolver.Extract();               
+            resolver.Extract();
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace downloader3
         public void Cancel()
         {
             State = States.Canceled;
-                    
+
             if (task == null || task.IsCompleted)
                 if (File.Exists(FullPath))
                     File.Delete(FullPath);
@@ -280,7 +280,7 @@ namespace downloader3
                 string oldPath = Path.Combine(Directory, FileName);
 
                 fs?.Close();
-                if (File.Exists(oldPath)) File.Move(oldPath, newPath); 
+                if (File.Exists(oldPath)) File.Move(oldPath, newPath);
                 if (task != null)
                 {
                     if (!task.IsCompleted)
@@ -321,12 +321,12 @@ namespace downloader3
                     else BytesDownloaded = 0;
                 }
                 if (BytesDownloaded > 0) request.AddRange(BytesDownloaded);
-                
+
                 response = (HttpWebResponse)request.GetResponse();
 
                 //když je FileName prázdný, ještě nebyl získan název souboru ze serveru, jinak se použije stávající
                 if (FileName == "")
-                {                    
+                {
                     string header = response.Headers["Content-Disposition"];
                     if (header != null)
                     {
@@ -343,7 +343,7 @@ namespace downloader3
                         FileName = Path.GetFileName(uri.LocalPath);
                     }
 
-                    //pokud již existuje soubor se stejným jménem, přidá se číslo               
+                    //pokud již existuje soubor se stejným jménem, přidá se číslo
                     int i = 1;
                     string baseName = FileName;
                     while (File.Exists(FullPath) && i <= maxRenameCount)
@@ -356,9 +356,9 @@ namespace downloader3
                         CallError(Lang.Translate("lang_file_exists"));
                         return;
                     }
-                }                 
+                }
 
-                receiveStream = response.GetResponseStream();                
+                receiveStream = response.GetResponseStream();
 
                 //když se navazuje stahování, ale celková velikost souboru se liší - soubor na serveru byl změněn,
                 //nebo odkaz přestal platit
@@ -380,9 +380,9 @@ namespace downloader3
                     }), null);
 
                     byte[] buffer = new byte[bufferSize];
-                    int receivedCount;                    
+                    int receivedCount;
                     while ((receivedCount = receiveStream.Read(buffer, 0, bufferSize)) > 0 && State != States.Canceled) //dokud není přečten celý stream
-                    {   
+                    {
                         fs.Write(buffer, 0, receivedCount);
                         BytesDownloaded += receivedCount;
                         processed += receivedCount;
@@ -391,14 +391,14 @@ namespace downloader3
                         if (State == States.Starting) State = States.Downloading;
 
                         if (SpeedLimit > 0 && processed >= SpeedLimit) Thread.Sleep(speedlimitSleep);
-                    }                    
-                }                
-            }            
+                    }
+                }
+            }
             catch (WebException e) //server neexistuje; errory 400, 500;
             {
                 CallError(e.Message);
             }
-            catch (ArgumentException e) 
+            catch (ArgumentException e)
             {
                 CallError(e.Message);
             }
@@ -435,7 +435,7 @@ namespace downloader3
                     timer.Start();
                     DownloadWorker();
                 }
-            }            
+            }
         }
 
         //proběhně každou sekundu (updateInterval), aktualizuje rychlost stahování

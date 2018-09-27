@@ -35,7 +35,7 @@ namespace downloader3
         }
 
         private void buttonSave_Click(object sender, RoutedEventArgs e)
-        {            
+        {
             DialogResult = true;
         }
 
@@ -45,9 +45,9 @@ namespace downloader3
         }
 
         private void textBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {            
+        {
             Regex regex = new Regex("[^0-9]+"); //pouze čísla
-            e.Handled = regex.IsMatch(e.Text);            
+            e.Handled = regex.IsMatch(e.Text);
         }
 
         private void textBox_PreviewExecuted(object sender, ExecutedRoutedEventArgs e)

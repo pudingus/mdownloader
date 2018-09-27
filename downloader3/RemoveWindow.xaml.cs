@@ -37,7 +37,7 @@ namespace downloader3
             image.Source = Imaging.CreateBitmapSourceFromHIcon(
                 System.Drawing.SystemIcons.Warning.Handle,
                 Int32Rect.Empty,
-                BitmapSizeOptions.FromEmptyOptions());            
+                BitmapSizeOptions.FromEmptyOptions());
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)
